@@ -71,7 +71,7 @@ export function ApprovalModal() {
               >
                 {approving
                   ? 'Approving...'
-                  : '✅ Approve as Guardian (Demo)'}
+                  : '✅ Approve as Guardian'}
               </button>
               <button
                 type="button"

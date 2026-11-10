@@ -1029,7 +1029,7 @@ export const useGameStore = create<GameStore>()(
             daySequenceStep: 0,
             daySummary: null,
             mentorMessages: [
-              'Fresh demo started! You have 100 coins and your first hen Clover.',
+              'Fresh coop started! You have 100 coins and your first hen Clover.',
             ],
             lastBalanceDelta: null,
             lastEggPriceDelta: null,

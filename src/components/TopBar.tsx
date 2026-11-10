@@ -160,7 +160,7 @@ export function TopBar() {
             <button
               type="button"
               onClick={() => fastForwardDays(3)}
-              title="Demo Mode: Fast-forward 3 days"
+              title="Fast-forward 3 days"
               className="min-h-[40px] px-2 py-1 rounded-xl bg-amber-100 hover:bg-amber-200 active:scale-95 text-coop-text text-[11px] font-extrabold border border-amber-300 transition"
             >
               ⏩+3d

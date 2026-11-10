@@ -173,7 +173,7 @@ export function ProofDrawer() {
                   }}
                   className="min-h-[42px] rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-300 text-xs font-extrabold text-coop-text"
                 >
-                  🔄 Reset Demo
+                  🔄 Reset Game
                 </button>
                 <button
                   type="button"
