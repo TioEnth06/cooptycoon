@@ -24,7 +24,7 @@ import { getGoalProgress, getLevelDef } from '@/game/levels';
 import {
   consumeNearWalletCallback,
   createPasskeyCredential,
-  redirectToNearSocialLogin,
+  normalizeNearAccountId,
 } from '@/lib/nearAuth';
 import { ease } from '@/animation/tokens';
 
@@ -45,11 +45,13 @@ export default function HomePage() {
   const skipDaySequence = useGameStore((s) => s.skipDaySequence);
 
   const [nicknameInput, setNicknameInput] = useState('Sunny');
-  const [emailInput, setEmailInput] = useState('');
-  const [showEmailPrompt, setShowEmailPrompt] = useState(false);
+  const [socialModal, setSocialModal] = useState<
+    'near' | 'google' | 'email' | null
+  >(null);
+  const [modalInput, setModalInput] = useState('');
   const [starting, setStarting] = useState(false);
 
-  // Detect NEAR Wallet / FastAuth redirect callback (?account_id=...)
+  // Detect optional URL callback (?account_id=...)
   useEffect(() => {
     const cb = consumeNearWalletCallback();
     if (cb) {
@@ -67,7 +69,7 @@ export default function HomePage() {
     return () => clearTimeout(t);
   }, [toast, clearToast]);
 
-  // 1. Login Screen (Social Login + NEAR Testnet Login + Guest Fallback)
+  // 1. Login Screen (In-App NEAR FastAuth / Social Login + Guest Fallback)
   if (!loggedIn) {
     const handleGuestStart = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -79,22 +81,45 @@ export default function HomePage() {
       }
     };
 
-    const handleQuickSocial = async (
-      provider: 'google' | 'apple' | 'email' | 'passkey'
-    ) => {
+    const handlePasskeyLogin = async () => {
       setStarting(true);
       try {
-        if (provider === 'passkey') {
-          const id = await createPasskeyCredential(nicknameInput || 'Sunny');
-          await loginWithSocial({ method: 'passkey', identifier: id });
-        } else if (provider === 'email') {
-          const emailName =
-            emailInput.trim().split('@')[0] || nicknameInput || 'Sunny';
-          await loginWithSocial({ method: 'email', identifier: emailName });
-        } else {
-          const name = nicknameInput.trim() || `${provider}Farmer`;
-          await loginWithSocial({ method: provider, identifier: name });
+        const id = await createPasskeyCredential(nicknameInput || 'Sunny');
+        await loginWithSocial({ method: 'passkey', identifier: id });
+      } finally {
+        setStarting(false);
+      }
+    };
+
+    const handleModalSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setStarting(true);
+      try {
+        if (socialModal === 'near') {
+          const { accountId, nickname } = normalizeNearAccountId(
+            modalInput || nicknameInput || 'sunny.testnet'
+          );
+          await loginWithSocial({
+            method: 'near-wallet',
+            identifier: nickname,
+            accountId,
+          });
+        } else if (socialModal === 'google') {
+          const emailOrName = modalInput.trim() || 'sunny@gmail.com';
+          const user = emailOrName.split('@')[0] || 'Sunny';
+          await loginWithSocial({
+            method: 'google',
+            identifier: user,
+          });
+        } else if (socialModal === 'email') {
+          const emailOrName = modalInput.trim() || 'student@school.edu';
+          const user = emailOrName.split('@')[0] || 'Sunny';
+          await loginWithSocial({
+            method: 'email',
+            identifier: user,
+          });
         }
+        setSocialModal(null);
       } finally {
         setStarting(false);
       }
@@ -136,23 +161,29 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Primary Social Login Options */}
+          {/* Primary In-App NEAR & Social Login Options (Zero external broken redirects) */}
           <div className="space-y-2 pt-1">
             <button
               type="button"
               disabled={starting}
-              onClick={() => redirectToNearSocialLogin()}
+              onClick={() => {
+                setModalInput('sunny.testnet');
+                setSocialModal('near');
+              }}
               className="w-full min-h-[50px] px-4 rounded-2xl bg-coop-text text-white font-heading text-base font-bold shadow-sm hover:opacity-95 active:scale-95 transition flex items-center justify-center gap-2"
             >
               <span>🔑</span>
-              <span>Sign in with NEAR / FastAuth</span>
+              <span>Sign in with NEAR FastAuth</span>
             </button>
 
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 disabled={starting}
-                onClick={() => void handleQuickSocial('google')}
+                onClick={() => {
+                  setModalInput('sunny.farmer@gmail.com');
+                  setSocialModal('google');
+                }}
                 className="min-h-[48px] px-3 rounded-2xl bg-coop-bg hover:bg-amber-100 active:scale-95 border-2 border-amber-200 font-heading text-sm font-bold text-coop-text flex items-center justify-center gap-1.5 transition"
               >
                 <span>🌐</span>
@@ -161,7 +192,7 @@ export default function HomePage() {
               <button
                 type="button"
                 disabled={starting}
-                onClick={() => void handleQuickSocial('passkey')}
+                onClick={() => void handlePasskeyLogin()}
                 className="min-h-[48px] px-3 rounded-2xl bg-coop-bg hover:bg-amber-100 active:scale-95 border-2 border-amber-200 font-heading text-sm font-bold text-coop-text flex items-center justify-center gap-1.5 transition"
               >
                 <span>🔐</span>
@@ -169,33 +200,17 @@ export default function HomePage() {
               </button>
             </div>
 
-            {!showEmailPrompt ? (
-              <button
-                type="button"
-                onClick={() => setShowEmailPrompt(true)}
-                className="w-full min-h-[42px] rounded-2xl bg-coop-bg/70 hover:bg-amber-100/70 border border-amber-200 text-xs font-extrabold text-coop-text transition"
-              >
-                ✉️ Continue with Email
-              </button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="you@school.edu"
-                  className="flex-1 min-h-[44px] px-3 rounded-2xl bg-coop-bg border-2 border-amber-200 text-sm font-bold text-coop-text"
-                />
-                <button
-                  type="button"
-                  disabled={starting}
-                  onClick={() => void handleQuickSocial('email')}
-                  className="min-h-[44px] px-4 rounded-2xl bg-coop-green text-white font-heading text-sm font-bold"
-                >
-                  Go
-                </button>
-              </div>
-            )}
+            <button
+              type="button"
+              disabled={starting}
+              onClick={() => {
+                setModalInput('sunny@school.edu');
+                setSocialModal('email');
+              }}
+              className="w-full min-h-[42px] rounded-2xl bg-coop-bg/70 hover:bg-amber-100/70 border border-amber-200 text-xs font-extrabold text-coop-text transition"
+            >
+              ✉️ Continue with Email
+            </button>
           </div>
 
           {/* Divider */}
@@ -230,6 +245,95 @@ export default function HomePage() {
             Virtual coins for learning. No real money.
           </p>
         </motion.div>
+
+        {/* In-App NEAR FastAuth / Google / Email Modal */}
+        <AnimatePresence>
+          {socialModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-[2px]">
+              <motion.form
+                onSubmit={handleModalSubmit}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-[400px] bg-coop-card rounded-3xl p-5 shadow-2xl border-4 border-coop-yellow space-y-4 text-left"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">
+                      {socialModal === 'near'
+                        ? '🔑'
+                        : socialModal === 'google'
+                        ? '🌐'
+                        : '✉️'}
+                    </span>
+                    <div>
+                      <h2 className="font-heading text-lg font-bold text-coop-text">
+                        {socialModal === 'near'
+                          ? 'NEAR FastAuth (Testnet)'
+                          : socialModal === 'google'
+                          ? 'Continue with Google'
+                          : 'Continue with Email'}
+                      </h2>
+                      <p className="text-xs font-bold text-coop-muted">
+                        Instant account setup • Zero gas or wallet popup
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSocialModal(null)}
+                    className="min-w-[38px] min-h-[38px] rounded-xl bg-coop-bg font-bold text-coop-text"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-extrabold uppercase text-coop-muted mb-1">
+                    {socialModal === 'near'
+                      ? 'NEAR Testnet Account ID or Handle'
+                      : 'Email Address'}
+                  </label>
+                  <input
+                    type={socialModal === 'near' ? 'text' : 'email'}
+                    required
+                    value={modalInput}
+                    onChange={(e) => setModalInput(e.target.value)}
+                    placeholder={
+                      socialModal === 'near'
+                        ? 'e.g. sunny.testnet'
+                        : 'you@example.com'
+                    }
+                    className="w-full min-h-[48px] px-3.5 rounded-2xl bg-coop-bg border-2 border-amber-200 font-heading text-base font-bold text-coop-text focus:outline-none focus:border-coop-yellow"
+                  />
+                  <p className="text-[11px] font-bold text-coop-muted mt-1.5">
+                    {socialModal === 'near'
+                      ? 'Automatically registers NEP-145 storage on coop-coin-7158.testnet and grants 100 COOP.'
+                      : 'Derives a dedicated NEAR Testnet custodial account and grants 100 starter coins.'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setSocialModal(null)}
+                    className="flex-1 min-h-[48px] rounded-2xl bg-coop-bg font-heading text-sm font-bold text-coop-muted"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={starting}
+                    className="flex-1 min-h-[48px] rounded-2xl bg-coop-green text-white font-heading text-base font-bold shadow-md hover:opacity-95 active:scale-95 transition"
+                  >
+                    {starting ? 'Connecting...' : 'Continue →'}
+                  </button>
+                </div>
+              </motion.form>
+            </div>
+          )}
+        </AnimatePresence>
       </main>
     );
   }
