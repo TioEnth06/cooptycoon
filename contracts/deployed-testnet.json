@@ -1,0 +1,19 @@
+{
+  "network": "testnet",
+  "rpcUrl": "https://test.rpc.fastnear.com",
+  "rootAccount": "coop-treasury-7158.testnet",
+  "treasuryAccount": "coop-treasury-7158.testnet",
+  "npcAccount": "coop-npc-7158.testnet",
+  "guardianAccount": "coop-guardian-7158.testnet",
+  "coopTokenContract": "coop-coin-7158.testnet",
+  "daoContract": "coop-class-7158.sputnikv2.testnet",
+  "provisionedAt": "2026-11-10T09:06:26.979Z",
+  "verificationTxs": {
+    "ftDeploy": "6JKLxMv7k52E6NZweAJBr4QHQLhdJJDpmsRXZAMMhZ5a",
+    "ftInit": "GVjnRHcsLrYb1iUR4jWbrPPGus2goUw9JtEtsQkPCaiZ",
+    "ftMintToTreasury": "piuoYdHd6C4wofYED3BtboHqguQoXLSEoM3qTiucj6j",
+    "ftTransferToNpc": "5oCtxL92xKUKidozrEYdkuNXFKgh495zuTGfwiBSBz8c",
+    "daoCreateProposal": "BKaS2YHdpQC8FG5JYzFxNtoJSdDjR7ZMMSfNE28oopyi",
+    "daoApproveProposal": "DEvycVfGYBnXFuns4aai5FXkLs7kVdS9ZEXMg94vDsgb"
+  }
+}

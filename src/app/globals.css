@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FFF6E5;
+  --surface: #FFFFFF;
+  --yellow: #FFC83D;
+  --green: #6BBF59;
+  --red: #E5604D;
+  --blue: #7CC4F0;
+  --text: #3B2F2F;
+  --muted: #8A7A70;
+}
+
+body {
+  background-color: #FFF6E5;
+  color: #3B2F2F;
+  font-family: var(--font-nunito), system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: var(--font-fredoka), system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

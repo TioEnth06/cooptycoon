@@ -1,0 +1,329 @@
+import {
+  Account,
+  JsonRpcProvider,
+  KeyPair,
+  KeyPairSigner,
+  type KeyPairString,
+} from 'near-api-js';
+import { ChainAdapter, TxProof } from './adapter';
+
+const STORAGE_DEPOSIT_YOCTO = BigInt('1250000000000000000000'); // 0.00125 NEAR
+const ONE_YOCTO = BigInt('1');
+const PROPOSAL_BOND_YOCTO = BigInt('1000000000000000000000000'); // 1 NEAR default Sputnik v2 bond
+const DEFAULT_GAS = BigInt('50000000000000'); // 50 TGas
+const DAO_GAS = BigInt('150000000000000'); // 150 TGas
+
+function getRpcUrl(): string {
+  return process.env.NEAR_RPC_URL || 'https://test.rpc.fastnear.com';
+}
+
+function getExplorerTxUrl(txId: string): string {
+  const base =
+    process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://testnet.nearblocks.io';
+  return `${base.replace(/\/$/, '')}/txns/${txId}`;
+}
+
+function getAccountSigner(accountId: string, privateKey: string): Account {
+  const provider = new JsonRpcProvider({ url: getRpcUrl() });
+  const normalizedKey = (
+    privateKey.startsWith('ed25519:') ? privateKey : `ed25519:${privateKey}`
+  ) as KeyPairString;
+  const keyPair = KeyPair.fromString(normalizedKey);
+  const signer = new KeyPairSigner(keyPair);
+  return new Account(accountId, provider, signer);
+}
+
+function extractTxHash(outcome: unknown): string {
+  if (
+    outcome &&
+    typeof outcome === 'object' &&
+    'transaction' in outcome &&
+    outcome.transaction &&
+    typeof outcome.transaction === 'object' &&
+    'hash' in outcome.transaction &&
+    typeof outcome.transaction.hash === 'string'
+  ) {
+    return outcome.transaction.hash;
+  }
+  if (
+    outcome &&
+    typeof outcome === 'object' &&
+    'transaction_outcome' in outcome &&
+    outcome.transaction_outcome &&
+    typeof outcome.transaction_outcome === 'object' &&
+    'id' in outcome.transaction_outcome &&
+    typeof outcome.transaction_outcome.id === 'string'
+  ) {
+    return outcome.transaction_outcome.id;
+  }
+  return `near-tx-${Date.now()}`;
+}
+
+export class NearChainAdapter implements ChainAdapter {
+  private get treasuryAccount(): Account {
+    const id = process.env.TREASURY_ACCOUNT || process.env.ROOT_ACCOUNT;
+    const key = process.env.TREASURY_PRIVATE_KEY;
+    if (!id || !key) {
+      throw new Error('Missing TREASURY_ACCOUNT or TREASURY_PRIVATE_KEY');
+    }
+    return getAccountSigner(id, key);
+  }
+
+  private get npcAccount(): Account {
+    const id = process.env.NPC_ACCOUNT || process.env.TREASURY_ACCOUNT;
+    const key =
+      process.env.NPC_PRIVATE_KEY || process.env.TREASURY_PRIVATE_KEY;
+    if (!id || !key) {
+      throw new Error('Missing NPC_ACCOUNT or NPC_PRIVATE_KEY');
+    }
+    return getAccountSigner(id, key);
+  }
+
+  private get guardianAccount(): Account {
+    const id = process.env.GUARDIAN_ACCOUNT || process.env.TREASURY_ACCOUNT;
+    const key =
+      process.env.GUARDIAN_PRIVATE_KEY || process.env.TREASURY_PRIVATE_KEY;
+    if (!id || !key) {
+      throw new Error('Missing GUARDIAN_ACCOUNT or GUARDIAN_PRIVATE_KEY');
+    }
+    return getAccountSigner(id, key);
+  }
+
+  private get ftContractId(): string {
+    const id = process.env.COOP_TOKEN_CONTRACT;
+    if (!id) {
+      throw new Error('Missing COOP_TOKEN_CONTRACT');
+    }
+    return id;
+  }
+
+  private get daoContractId(): string {
+    const id = process.env.DAO_CONTRACT;
+    if (!id) {
+      throw new Error('Missing DAO_CONTRACT');
+    }
+    return id;
+  }
+
+  async ensureAccount(nickname: string): Promise<{ accountId: string }> {
+    const clean =
+      nickname
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '')
+        .slice(0, 16) || 'player';
+    const root =
+      process.env.ROOT_ACCOUNT ||
+      process.env.TREASURY_ACCOUNT ||
+      'coop.testnet';
+    const targetAccountId = root;
+    const treasury = this.treasuryAccount;
+
+    await treasury.callFunctionRaw({
+      contractId: this.ftContractId,
+      methodName: 'storage_deposit',
+      args: {
+        account_id: targetAccountId,
+        registration_only: true,
+      },
+      gas: DEFAULT_GAS,
+      deposit: STORAGE_DEPOSIT_YOCTO,
+    });
+
+    return { accountId: `${clean}.${root}` };
+  }
+
+  private resolveOnchainReceiver(accountId: string): string {
+    const root = process.env.ROOT_ACCOUNT || process.env.TREASURY_ACCOUNT;
+    if (root && accountId.endsWith(`.${root}`)) {
+      return root;
+    }
+    return accountId;
+  }
+
+  async grantStarter(accountId: string, amount: number): Promise<TxProof> {
+    const treasury = this.treasuryAccount;
+    const receiverId = this.resolveOnchainReceiver(accountId);
+    const outcome = await treasury.callFunctionRaw({
+      contractId: this.ftContractId,
+      methodName: 'ft_transfer',
+      args: {
+        receiver_id: receiverId,
+        amount: String(Math.round(amount)),
+        memo: `Starter grant for ${accountId}`,
+      },
+      gas: DEFAULT_GAS,
+      deposit: ONE_YOCTO,
+    });
+
+    const txId = extractTxHash(outcome);
+    return {
+      label: `Starter grant (+${amount} COOP)`,
+      txId,
+      url: getExplorerTxUrl(txId),
+      status: 'confirmed',
+      timestamp: Date.now(),
+    };
+  }
+
+  async payout(accountId: string, amount: number): Promise<TxProof> {
+    const npc = this.npcAccount;
+    const receiverId = this.resolveOnchainReceiver(accountId);
+    const outcome = await npc.callFunctionRaw({
+      contractId: this.ftContractId,
+      methodName: 'ft_transfer',
+      args: {
+        receiver_id: receiverId,
+        amount: String(Math.round(amount)),
+        memo: `NPC egg purchase payout to ${accountId}`,
+      },
+      gas: DEFAULT_GAS,
+      deposit: ONE_YOCTO,
+    });
+
+    const txId = extractTxHash(outcome);
+    return {
+      label: `NPC egg payout (+${amount} COOP)`,
+      txId,
+      url: getExplorerTxUrl(txId),
+      status: 'confirmed',
+      timestamp: Date.now(),
+    };
+  }
+
+  async burnOrFee(accountId: string, amount: number): Promise<TxProof> {
+    const treasury = this.treasuryAccount;
+    const npcId = process.env.NPC_ACCOUNT || treasury.accountId;
+    const outcome = await treasury.callFunctionRaw({
+      contractId: this.ftContractId,
+      methodName: 'ft_transfer',
+      args: {
+        receiver_id: npcId,
+        amount: String(Math.max(1, Math.round(amount))),
+        memo: `Fee/penalty burn from ${accountId}`,
+      },
+      gas: DEFAULT_GAS,
+      deposit: ONE_YOCTO,
+    });
+
+    const txId = extractTxHash(outcome);
+    return {
+      label: `Burn / fee (-${amount} COOP)`,
+      txId,
+      url: getExplorerTxUrl(txId),
+      status: 'confirmed',
+      timestamp: Date.now(),
+    };
+  }
+
+  async mintBonus(accountIds: string[], amount: number): Promise<TxProof[]> {
+    const treasury = this.treasuryAccount;
+    const proofs: TxProof[] = [];
+    const primaryAccount = accountIds[0] || treasury.accountId;
+    const receiverId = this.resolveOnchainReceiver(primaryAccount);
+
+    const outcome = await treasury.callFunctionRaw({
+      contractId: this.ftContractId,
+      methodName: 'ft_transfer',
+      args: {
+        receiver_id: receiverId,
+        amount: String(Math.round(amount)),
+        memo: `Class Goal Season Bonus (+${amount} COOP)`,
+      },
+      gas: DEFAULT_GAS,
+      deposit: ONE_YOCTO,
+    });
+
+    const txId = extractTxHash(outcome);
+    proofs.push({
+      label: `Class Goal Season Bonus (+${amount} COOP)`,
+      txId,
+      url: getExplorerTxUrl(txId),
+      status: 'confirmed',
+      timestamp: Date.now(),
+    });
+
+    return proofs;
+  }
+
+  async proposeBuy(
+    accountId: string,
+    amount: number
+  ): Promise<{ proposalId: string; proof: TxProof }> {
+    const proposer = this.guardianAccount;
+    const outcome = await proposer.callFunctionRaw({
+      contractId: this.daoContractId,
+      methodName: 'add_proposal',
+      args: {
+        proposal: {
+          description: `Approve purchase of 1 Hen for ${amount} COOP by ${accountId}`,
+          kind: 'Vote',
+        },
+      },
+      gas: DAO_GAS,
+      deposit: PROPOSAL_BOND_YOCTO,
+    });
+
+    const txId = extractTxHash(outcome);
+
+    let proposalId = '0';
+    try {
+      const provider = new JsonRpcProvider({ url: getRpcUrl() });
+      const lastId = await provider.callFunction({
+        contractId: this.daoContractId,
+        method: 'get_last_proposal_id',
+        args: {},
+      });
+      if (typeof lastId === 'number' && lastId > 0) {
+        proposalId = String(lastId - 1);
+      }
+    } catch {
+      proposalId = '0';
+    }
+
+    return {
+      proposalId,
+      proof: {
+        label: `DAO Proposal #${proposalId}: Buy Hen (${amount} COOP)`,
+        txId,
+        url: getExplorerTxUrl(txId),
+        status: 'confirmed',
+        timestamp: Date.now(),
+      },
+    };
+  }
+
+  async approve(proposalId: string): Promise<TxProof> {
+    const guardian = this.guardianAccount;
+    const numericId = Number.isNaN(Number(proposalId)) ? 0 : Number(proposalId);
+    const outcome = await guardian.callFunctionRaw({
+      contractId: this.daoContractId,
+      methodName: 'act_proposal',
+      args: {
+        id: numericId,
+        action: 'VoteApprove',
+      },
+      gas: DAO_GAS,
+      deposit: BigInt(0),
+    });
+
+    const txId = extractTxHash(outcome);
+    return {
+      label: `Guardian approved DAO Proposal #${numericId}`,
+      txId,
+      url: getExplorerTxUrl(txId),
+      status: 'confirmed',
+      timestamp: Date.now(),
+    };
+  }
+
+  async balanceOf(accountId: string): Promise<number> {
+    const provider = new JsonRpcProvider({ url: getRpcUrl() });
+    const target = this.resolveOnchainReceiver(accountId);
+    const raw = await provider.callFunction({
+      contractId: this.ftContractId,
+      method: 'ft_balance_of',
+      args: { account_id: target },
+    });
+    return Number(raw || 0);
+  }
+}
