@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { GUARDIAN_THRESHOLD, HEN_PRICE } from '@/game/constants';
+import { ShieldIcon } from './icons/GameIcons';
 
 export function ApprovalModal() {
   const pendingApproval = useGameStore((s) => s.game.pendingApproval);
@@ -30,28 +31,27 @@ export function ApprovalModal() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="w-full max-w-[420px] bg-coop-card rounded-3xl p-5 shadow-xl border-4 border-coop-blue space-y-4"
+            className="game-card w-full max-w-[420px] p-5 space-y-4"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-coop-blue/30 flex items-center justify-center text-2xl">
-                <span role="img" aria-label="Guardian Shield">
-                  🛡️
-                </span>
+              <div className="w-12 h-12 rounded-2xl bg-coop-blue/30 border-2 border-[#3B2F2F] flex items-center justify-center">
+                <ShieldIcon className="w-7 h-7" />
               </div>
               <div>
                 <h3 className="font-heading text-xl font-bold text-coop-text">
                   Guardian Approval Needed
                 </h3>
                 <p className="text-xs font-bold text-coop-muted">
-                  Request #{pendingApproval.proposalId} • Big Purchase (&ge; {GUARDIAN_THRESHOLD} coins)
+                  Request #{pendingApproval.proposalId} • Big Purchase (&ge;{' '}
+                  {GUARDIAN_THRESHOLD} coins)
                 </p>
               </div>
             </div>
 
-            <div className="bg-coop-bg rounded-2xl p-3.5 border border-amber-200 space-y-1.5 text-sm font-semibold text-coop-text">
+            <div className="bg-coop-bg rounded-2xl p-3.5 border-2 border-[#3B2F2F] space-y-1.5 text-sm font-semibold text-coop-text">
               <div className="flex items-center justify-between">
                 <span>Item requested:</span>
-                <span className="font-extrabold">🐔 1 Healthy Hen</span>
+                <span className="font-extrabold">1 Healthy Hen</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Cost:</span>
@@ -67,17 +67,15 @@ export function ApprovalModal() {
                 type="button"
                 disabled={approving}
                 onClick={handleApprove}
-                className="w-full min-h-[52px] rounded-2xl bg-coop-green text-white font-heading text-base font-bold shadow-md hover:opacity-95 active:scale-95 disabled:opacity-50 transition"
+                className="btn-game-green w-full min-h-[52px] text-base"
               >
-                {approving
-                  ? 'Approving...'
-                  : '✅ Approve as Guardian'}
+                {approving ? 'Approving...' : 'Approve as Guardian'}
               </button>
               <button
                 type="button"
                 disabled={approving}
                 onClick={cancelBuyHen}
-                className="w-full min-h-[46px] rounded-2xl bg-coop-bg text-coop-muted font-heading text-sm font-bold hover:bg-amber-100 transition"
+                className="btn-game-secondary w-full min-h-[46px] text-sm"
               >
                 Cancel Request
               </button>

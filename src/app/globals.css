@@ -17,6 +17,8 @@
 
 body {
   background-color: #FFF6E5;
+  background-image: radial-gradient(#F3E2C3 1.25px, transparent 1.25px);
+  background-size: 20px 20px;
   color: #3B2F2F;
   font-family: var(--font-nunito), system-ui, -apple-system, sans-serif;
   font-size: 16px;
@@ -26,6 +28,34 @@ body {
 
 h1, h2, h3, h4, .font-heading {
   font-family: var(--font-fredoka), system-ui, -apple-system, sans-serif;
+}
+
+@layer components {
+  /* Tactile Indie Game Card with solid dark outline & bottom depth */
+  .game-card {
+    @apply bg-coop-card rounded-3xl border-2 border-[#3B2F2F] shadow-[0_4px_0_0_#3B2F2F];
+  }
+
+  .game-panel {
+    @apply bg-[#FFF6E5] rounded-2xl border-2 border-[#3B2F2F]/20;
+  }
+
+  /* Tactile 3D Push Buttons */
+  .btn-game-primary {
+    @apply bg-coop-yellow text-coop-text font-heading font-bold rounded-2xl border-2 border-[#3B2F2F] shadow-[0_4px_0_0_#3B2F2F] active:translate-y-[2px] active:shadow-[0_2px_0_0_#3B2F2F] disabled:opacity-45 disabled:pointer-events-none transition-all;
+  }
+
+  .btn-game-green {
+    @apply bg-coop-green text-white font-heading font-bold rounded-2xl border-2 border-[#3B2F2F] shadow-[0_4px_0_0_#3B2F2F] active:translate-y-[2px] active:shadow-[0_2px_0_0_#3B2F2F] disabled:opacity-45 disabled:pointer-events-none transition-all;
+  }
+
+  .btn-game-red {
+    @apply bg-coop-red text-white font-heading font-bold rounded-2xl border-2 border-[#3B2F2F] shadow-[0_4px_0_0_#3B2F2F] active:translate-y-[2px] active:shadow-[0_2px_0_0_#3B2F2F] disabled:opacity-45 disabled:pointer-events-none transition-all;
+  }
+
+  .btn-game-secondary {
+    @apply bg-coop-card text-coop-text font-heading font-bold rounded-2xl border-2 border-[#3B2F2F] shadow-[0_3px_0_0_#3B2F2F] hover:bg-[#FFF6E5] active:translate-y-[2px] active:shadow-[0_1px_0_0_#3B2F2F] disabled:opacity-45 disabled:pointer-events-none transition-all;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

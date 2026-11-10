@@ -11,6 +11,15 @@ import {
 import { getClassSavingsTotal } from '@/game/engine';
 import { eggPrice } from '@/game/market';
 import { CoinFly } from './Animations';
+import {
+  BasketIcon,
+  BroomIcon,
+  JarIcon,
+  MedicineIcon,
+  MoonIcon,
+  SunIcon,
+  TrophyIcon,
+} from './icons/GameIcons';
 
 export function ActionBar() {
   const game = useGameStore((s) => s.game);
@@ -54,121 +63,92 @@ export function ActionBar() {
   return (
     <nav
       aria-label="Game Actions"
-      className="sticky bottom-0 z-20 bg-coop-card/95 backdrop-blur-md border-t-2 border-amber-200 px-3 pt-2.5 pb-3 shadow-lg rounded-t-3xl space-y-2"
+      className="sticky bottom-0 z-20 bg-coop-card border-t-2 border-[#3B2F2F] px-3 pt-2.5 pb-3 rounded-t-3xl space-y-2 shadow-[0_-4px_0_0_rgba(59,47,47,0.08)]"
     >
       {/* Curved Coin Arc Animation from Sell Eggs to TopBar Balance */}
       <CoinFly trigger={flyingCoinsTrigger} count={lastSoldCount} />
 
-      {/* Top Row: Secondary Actions (Clean, Medicine, Savings, Class Goal) */}
+      {/* Top Row: Secondary Tactile Buttons (Clean, Medicine, Savings, Class Goal) */}
       <div className="grid grid-cols-4 gap-2">
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+        <button
           type="button"
           onClick={cleanCoop}
           disabled={!canClean}
-          className="min-h-[52px] flex flex-col items-center justify-center px-2 py-1.5 rounded-2xl bg-coop-bg hover:bg-amber-100 disabled:opacity-45 border border-amber-200 transition"
+          className="btn-game-secondary min-h-[54px] flex flex-col items-center justify-center px-1.5 py-1.5"
         >
-          <span className="text-lg leading-none" role="img" aria-label="Clean">
-            🧹
-          </span>
-          <span className="text-xs font-extrabold text-coop-text mt-0.5">
+          <BroomIcon className="w-5 h-5" />
+          <span className="text-xs font-extrabold text-coop-text mt-0.5 leading-none">
             Clean
           </span>
-          <span className="text-[11px] font-bold text-coop-muted">
+          <span className="text-[10px] font-bold text-coop-muted mt-0.5">
             {CLEAN_COST} coins
           </span>
-        </motion.button>
+        </button>
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+        <button
           type="button"
           onClick={() => cureHen()}
           disabled={!canCure}
-          className={`min-h-[52px] flex flex-col items-center justify-center px-2 py-1.5 rounded-2xl disabled:opacity-45 border transition ${
-            sickHensCount > 0
-              ? 'bg-coop-red text-white border-coop-red animate-pulse'
-              : 'bg-coop-bg text-coop-text border-amber-200'
+          className={`min-h-[54px] flex flex-col items-center justify-center px-1.5 py-1.5 ${
+            sickHensCount > 0 ? 'btn-game-red animate-pulse' : 'btn-game-secondary'
           }`}
         >
-          <span
-            className="text-lg leading-none"
-            role="img"
-            aria-label="Medicine"
-          >
-            💊
+          <MedicineIcon className="w-5 h-5" />
+          <span className="text-xs font-extrabold mt-0.5 leading-none">
+            Medicine
           </span>
-          <span className="text-xs font-extrabold mt-0.5">Medicine</span>
           <span
-            className={`text-[11px] font-bold ${
+            className={`text-[10px] font-bold mt-0.5 ${
               sickHensCount > 0 ? 'text-white/90' : 'text-coop-muted'
             }`}
           >
             {MEDICINE_COST} coins
           </span>
-        </motion.button>
+        </button>
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+        <button
           type="button"
           onClick={() => setActiveSheet('savings')}
-          className="min-h-[52px] flex flex-col items-center justify-center px-2 py-1.5 rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-200 transition"
+          className="btn-game-secondary min-h-[54px] flex flex-col items-center justify-center px-1.5 py-1.5"
         >
-          <span
-            className="text-lg leading-none"
-            role="img"
-            aria-label="Savings Jar"
-          >
-            🏺
-          </span>
-          <span className="text-xs font-extrabold text-coop-text mt-0.5">
+          <JarIcon className="w-5 h-5" />
+          <span className="text-xs font-extrabold text-coop-text mt-0.5 leading-none">
             Savings
           </span>
-          <span className="text-[11px] font-bold text-coop-green">
+          <span className="text-[10px] font-extrabold text-coop-green mt-0.5">
             {Math.round(game.jar)} coins
           </span>
-        </motion.button>
+        </button>
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+        <button
           type="button"
           onClick={() => setActiveSheet('class_goal')}
-          className="min-h-[52px] flex flex-col items-center justify-center px-2 py-1.5 rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-200 transition"
+          className="btn-game-secondary min-h-[54px] flex flex-col items-center justify-center px-1.5 py-1.5"
         >
-          <span
-            className="text-lg leading-none"
-            role="img"
-            aria-label="Class Goal"
-          >
-            🏆
-          </span>
-          <span className="text-xs font-extrabold text-coop-text mt-0.5">
+          <TrophyIcon className="w-5 h-5" />
+          <span className="text-xs font-extrabold text-coop-text mt-0.5 leading-none">
             Class Goal
           </span>
-          <span className="text-[11px] font-bold text-coop-muted">
+          <span className="text-[10px] font-bold text-coop-muted mt-0.5">
             {classGoalPct}%
           </span>
-        </motion.button>
+        </button>
       </div>
 
       {/* Bottom Row: Primary Egg Sale + Next Day */}
       <div className="grid grid-cols-5 gap-2.5">
-        <motion.button
+        <button
           id="sell-eggs-btn"
-          whileTap={{ scale: 0.95 }}
           type="button"
           onClick={sellAllEggs}
           disabled={!canSell}
-          className={`col-span-2 min-h-[56px] flex flex-col items-center justify-center px-3 py-2 rounded-2xl border-2 font-heading transition disabled:opacity-50 ${
-            highlightSell
-              ? 'bg-coop-green text-white border-coop-green ring-4 ring-coop-green/30'
-              : 'bg-coop-green/90 hover:bg-coop-green text-white border-coop-green'
+          className={`btn-game-green col-span-2 min-h-[56px] flex flex-col items-center justify-center px-3 py-2 ${
+            highlightSell ? 'ring-4 ring-coop-green/40' : ''
           }`}
         >
-          <div className="flex items-center gap-1 text-sm font-bold">
-            <span role="img" aria-label="Sell Eggs">
-              🧺
-            </span>
-            <span>Sell Eggs ({game.eggs})</span>
+          <div className="flex items-center gap-1.5 text-sm font-bold">
+            <BasketIcon className="w-5 h-5" />
+            <span>Sell ({game.eggs})</span>
           </div>
           <div className="flex items-center gap-1 text-xs font-extrabold">
             <span>{currentEggPrice} coins/egg</span>
@@ -178,32 +158,33 @@ export function ActionBar() {
                 initial={{ scale: 1 }}
                 animate={{ scale: [1, 1.3, 1] }}
                 transition={{ duration: 0.35 }}
-                className="px-1 rounded bg-white/25 text-[11px]"
+                className="px-1 rounded bg-black/20 text-[10px]"
               >
-                {lastEggPriceDelta > 0 ? '▲' : '▼'}
+                {lastEggPriceDelta > 0 ? 'UP' : 'DOWN'}
               </motion.span>
             )}
           </div>
-        </motion.button>
+        </button>
 
-        <motion.button
-          whileTap={{ scale: 0.95 }}
+        <button
           type="button"
           onClick={advanceDay}
-          className={`col-span-3 min-h-[56px] flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-2xl bg-coop-yellow hover:brightness-105 text-coop-text font-heading text-lg font-bold shadow-md border-2 border-amber-400 transition ${
-            highlightNextDay ? 'ring-4 ring-coop-yellow/40' : ''
+          className={`btn-game-primary col-span-3 min-h-[56px] flex items-center justify-center gap-2.5 px-4 py-2.5 text-lg ${
+            highlightNextDay ? 'ring-4 ring-coop-yellow/45' : ''
           }`}
         >
           <motion.span
             animate={
-              sunMoonSwap ? { rotate: [0, 180, 360], scale: [1, 1.25, 1] } : {}
+              sunMoonSwap ? { rotate: [0, 180, 360], scale: [1, 1.2, 1] } : {}
             }
             transition={{ duration: 0.45 }}
-            className="text-2xl leading-none"
-            role="img"
-            aria-label="Next Day"
+            className="shrink-0"
           >
-            {sunMoonSwap ? '🌙' : '☀️'}
+            {sunMoonSwap ? (
+              <MoonIcon className="w-7 h-7" />
+            ) : (
+              <SunIcon className="w-7 h-7" />
+            )}
           </motion.span>
           <div className="text-left leading-tight">
             <div>Next Day</div>
@@ -211,7 +192,7 @@ export function ActionBar() {
               Feed hens &amp; collect eggs
             </div>
           </div>
-        </motion.button>
+        </button>
       </div>
     </nav>
   );

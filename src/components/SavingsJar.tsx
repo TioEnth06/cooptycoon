@@ -8,6 +8,7 @@ import {
   SAVINGS_INTEREST_PER_DAY,
   SAVINGS_MIN_LOCK_DAYS,
 } from '@/game/constants';
+import { JarIcon } from './icons/GameIcons';
 
 export function SavingsJar() {
   const activeSheet = useGameStore((s) => s.activeSheet);
@@ -37,19 +38,19 @@ export function SavingsJar() {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="w-full max-w-[480px] bg-coop-card rounded-t-3xl p-5 shadow-xl border-t-4 border-coop-yellow space-y-4"
+            className="w-full max-w-[480px] bg-coop-card rounded-t-3xl p-5 shadow-xl border-t-4 border-[#3B2F2F] space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="text-3xl" role="img" aria-label="Savings Jar">
-                  🏺
-                </span>
+                <div className="w-11 h-11 rounded-2xl bg-coop-blue/25 border-2 border-[#3B2F2F] flex items-center justify-center">
+                  <JarIcon className="w-6 h-6" />
+                </div>
                 <div>
                   <h3 className="font-heading text-xl font-bold text-coop-text">
                     Savings Jar
                   </h3>
                   <p className="text-xs font-bold text-coop-muted">
-                    Earns +{SAVINGS_INTEREST_PER_DAY * 100}% interest every day!
+                    Earns +{SAVINGS_INTEREST_PER_DAY * 100}% daily compound interest
                   </p>
                 </div>
               </div>
@@ -57,14 +58,14 @@ export function SavingsJar() {
                 type="button"
                 onClick={() => setActiveSheet(null)}
                 aria-label="Close Savings Jar"
-                className="min-w-[44px] min-h-[44px] rounded-2xl bg-coop-bg font-bold text-coop-text"
+                className="btn-game-secondary min-w-[42px] min-h-[42px]"
               >
                 ✕
               </button>
             </div>
 
             {/* Current Jar Balance & Lock Status */}
-            <div className="bg-coop-bg rounded-2xl p-3.5 border border-amber-200 flex items-center justify-between">
+            <div className="bg-coop-bg rounded-2xl p-3.5 border-2 border-[#3B2F2F] flex items-center justify-between">
               <div>
                 <div className="text-xs font-bold uppercase text-coop-muted">
                   Saved in Jar
@@ -82,12 +83,12 @@ export function SavingsJar() {
                     No deposit yet
                   </span>
                 ) : isEarlyWithdraw ? (
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-coop-red/15 text-coop-red text-xs font-extrabold">
-                    🔒 {daysRemainingLock}d left (10% early fee)
+                  <span className="inline-block px-2 py-0.5 rounded-md bg-coop-red text-white text-xs font-extrabold border border-[#3B2F2F]">
+                    Locked: {daysRemainingLock}d left (10% fee)
                   </span>
                 ) : (
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-coop-green/20 text-coop-text text-xs font-extrabold">
-                    ✅ Unlocked (No fee!)
+                  <span className="inline-block px-2 py-0.5 rounded-md bg-coop-green text-white text-xs font-extrabold border border-[#3B2F2F]">
+                    Unlocked (No fee)
                   </span>
                 )}
               </div>
@@ -104,14 +105,14 @@ export function SavingsJar() {
                   min={1}
                   value={amountInput}
                   onChange={(e) => setAmountInput(e.target.value)}
-                  className="flex-1 min-h-[48px] px-3.5 rounded-2xl bg-coop-bg border-2 border-amber-200 font-heading text-lg font-bold text-coop-text"
+                  className="flex-1 min-h-[48px] px-3.5 rounded-2xl bg-coop-bg border-2 border-[#3B2F2F] font-heading text-lg font-bold text-coop-text"
                 />
                 {[10, 25, 50].map((preset) => (
                   <button
                     key={preset}
                     type="button"
                     onClick={() => setAmountInput(String(preset))}
-                    className="min-h-[48px] px-3 rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-200 text-xs font-extrabold text-coop-text"
+                    className="btn-game-secondary min-h-[48px] px-3 text-xs font-extrabold"
                   >
                     {preset}
                   </button>
@@ -121,10 +122,10 @@ export function SavingsJar() {
 
             {/* Early Withdraw Warning */}
             {isEarlyWithdraw && (
-              <div className="p-3 rounded-2xl bg-coop-red/10 border border-coop-red text-xs font-bold text-coop-red">
-                ⚠️ Withdrawing before {SAVINGS_MIN_LOCK_DAYS} days loses{' '}
+              <div className="p-3 rounded-2xl bg-coop-red/10 border-2 border-coop-red text-xs font-bold text-coop-red">
+                Withdrawing before {SAVINGS_MIN_LOCK_DAYS} days burns{' '}
                 {SAVINGS_EARLY_PENALTY * 100}% of the withdrawn coins. Waiting{' '}
-                {daysRemainingLock} more day(s) makes withdrawal free!
+                {daysRemainingLock} more day(s) makes withdrawal free.
               </div>
             )}
 
@@ -136,17 +137,17 @@ export function SavingsJar() {
                 onClick={() =>
                   depositJar(Math.min(numericAmount, Math.floor(game.balance)))
                 }
-                className="min-h-[52px] rounded-2xl bg-coop-green text-white font-heading text-base font-bold shadow-sm hover:opacity-95 active:scale-95 disabled:opacity-45 transition"
+                className="btn-game-green min-h-[52px] text-base"
               >
-                ➕ Deposit Coins
+                Deposit Coins
               </button>
               <button
                 type="button"
                 disabled={numericAmount <= 0 || game.jar <= 0}
                 onClick={() => withdrawJar(Math.min(numericAmount, game.jar))}
-                className="min-h-[52px] rounded-2xl bg-coop-yellow text-coop-text font-heading text-base font-bold shadow-sm hover:opacity-95 active:scale-95 disabled:opacity-45 transition"
+                className="btn-game-primary min-h-[52px] text-base"
               >
-                ➖ Withdraw
+                Withdraw
               </button>
             </div>
           </motion.div>

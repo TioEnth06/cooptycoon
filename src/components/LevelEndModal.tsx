@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { CAREER_LEVELS, getLevelDef, netWorth } from '@/game/levels';
 import { Confetti, Stars } from './Animations';
+import { OwlAvatar } from './icons/GameIcons';
 
 export function LevelEndModal() {
   const levelOutcome = useGameStore((s) => s.levelOutcome);
@@ -41,9 +42,7 @@ export function LevelEndModal() {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className={`w-full max-w-[420px] bg-coop-card rounded-3xl p-6 text-center shadow-2xl border-4 space-y-4 ${
-            isWin ? 'border-coop-yellow' : 'border-coop-blue'
-          }`}
+          className="game-card w-full max-w-[420px] p-6 text-center space-y-4"
         >
           {isWin ? (
             <>
@@ -53,7 +52,7 @@ export function LevelEndModal() {
               <h2 className="font-heading text-2xl font-bold text-coop-text">
                 {levelDef.name} Complete!
               </h2>
-              <div className="bg-coop-bg rounded-2xl p-3.5 border border-amber-200 grid grid-cols-2 gap-2 text-xs font-bold">
+              <div className="bg-coop-bg rounded-2xl p-3.5 border-2 border-[#3B2F2F] grid grid-cols-2 gap-2 text-xs font-bold">
                 <div>
                   <div className="text-coop-muted uppercase">Days Used</div>
                   <div className="font-heading text-lg text-coop-text">
@@ -68,9 +67,8 @@ export function LevelEndModal() {
                 </div>
               </div>
 
-              {/* What You Learned (tied to level concept) */}
-              <div className="bg-coop-blue/20 border-2 border-coop-blue rounded-2xl p-3.5 text-left flex items-start gap-2.5">
-                <span className="text-2xl">🦉</span>
+              <div className="bg-coop-blue/25 border-2 border-[#3B2F2F] rounded-2xl p-3.5 text-left flex items-start gap-2.5">
+                <OwlAvatar className="w-10 h-10 shrink-0" />
                 <div>
                   <div className="text-[11px] font-extrabold uppercase text-coop-text">
                     What You Learned • {levelDef.concept}
@@ -86,7 +84,7 @@ export function LevelEndModal() {
                   <button
                     type="button"
                     onClick={() => startLevel('career', nextCareerLevel.id)}
-                    className="w-full min-h-[52px] rounded-2xl bg-coop-green text-white font-heading text-lg font-bold shadow-md hover:opacity-95 active:scale-95 transition"
+                    className="btn-game-green w-full min-h-[52px] text-lg"
                   >
                     Next Level: {nextCareerLevel.name} →
                   </button>
@@ -95,9 +93,9 @@ export function LevelEndModal() {
                   <button
                     type="button"
                     onClick={retryCurrentLevel}
-                    className="min-h-[46px] rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-200 font-heading text-sm font-bold text-coop-text"
+                    className="btn-game-secondary min-h-[46px] text-sm"
                   >
-                    🔄 Replay
+                    Replay
                   </button>
                   <button
                     type="button"
@@ -106,28 +104,20 @@ export function LevelEndModal() {
                         mode === 'challenge' ? 'challenge_select' : 'level_select'
                       )
                     }
-                    className="min-h-[46px] rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-200 font-heading text-sm font-bold text-coop-text"
+                    className="btn-game-secondary min-h-[46px] text-sm"
                   >
-                    📋 All Levels
+                    All Levels
                   </button>
                 </div>
               </div>
             </>
           ) : (
-            /* Gentle Lose Screen (Time or Out of Coins — never shames) */
             <>
-              <motion.div
-                animate={{ rotate: -8 }}
-                transition={{ duration: 0.4 }}
-                className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-coop-bg text-4xl mx-auto"
-              >
-                🐣
-              </motion.div>
               <h2 className="font-heading text-2xl font-bold text-coop-text">
                 {isBankruptLoss ? 'Out of Coins' : 'Almost There!'}
               </h2>
-              <div className="bg-coop-blue/20 border-2 border-coop-blue rounded-2xl p-3.5 text-left flex items-start gap-2.5">
-                <span className="text-2xl">🦉</span>
+              <div className="bg-coop-blue/25 border-2 border-[#3B2F2F] rounded-2xl p-3.5 text-left flex items-start gap-2.5">
+                <OwlAvatar className="w-10 h-10 shrink-0" />
                 <p className="text-xs font-bold text-coop-text">
                   {isBankruptLoss
                     ? 'Your coins ran below daily feed cost with no eggs or savings left. Keeping a small reserve in your Savings Jar helps cover surprise expenses!'
@@ -139,14 +129,14 @@ export function LevelEndModal() {
                 <button
                   type="button"
                   onClick={retryCurrentLevel}
-                  className="w-full min-h-[52px] rounded-2xl bg-coop-yellow text-coop-text font-heading text-lg font-bold shadow-md border-2 border-amber-400 hover:brightness-105 active:scale-95 transition"
+                  className="btn-game-primary w-full min-h-[52px] text-lg"
                 >
-                  🔄 Try Level Again
+                  Try Level Again
                 </button>
                 <button
                   type="button"
                   onClick={() => setScreen('home')}
-                  className="w-full min-h-[46px] rounded-2xl bg-coop-bg text-coop-muted font-heading text-sm font-bold hover:bg-amber-100 transition"
+                  className="btn-game-secondary w-full min-h-[46px] text-sm"
                 >
                   Back to Home Modes
                 </button>

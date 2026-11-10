@@ -4,8 +4,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/store/gameStore';
 import { SEASON_BONUS_MINT } from '@/game/constants';
-
-const CONFETTI_EMOJIS = ['🎉', '🪙', '🐔', '🥚', '🌟', '🏆', '✨', '🎊'];
+import { Confetti } from './Animations';
+import { TrophyIcon } from './icons/GameIcons';
 
 export function Celebration() {
   const showCelebration = useGameStore((s) => s.showCelebration);
@@ -15,40 +15,17 @@ export function Celebration() {
     <AnimatePresence>
       {showCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-[2px]">
-          {/* Emoji Confetti Burst */}
-          <div className="pointer-events-none fixed inset-0 overflow-hidden">
-            {CONFETTI_EMOJIS.map((emoji, idx) => (
-              <motion.span
-                key={idx}
-                initial={{
-                  opacity: 1,
-                  y: '50vh',
-                  x: `${15 + idx * 10}vw`,
-                  scale: 0.5,
-                }}
-                animate={{
-                  opacity: [1, 1, 0],
-                  y: ['50vh', `${10 + (idx % 3) * 12}vh`],
-                  scale: [0.6, 1.3, 1],
-                  rotate: [0, idx % 2 === 0 ? 45 : -45],
-                }}
-                transition={{ duration: 0.55, ease: 'easeOut' }}
-                className="absolute text-3xl"
-              >
-                {emoji}
-              </motion.span>
-            ))}
-          </div>
+          <Confetti />
 
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-[400px] bg-coop-card rounded-3xl p-6 text-center shadow-2xl border-4 border-coop-yellow space-y-4"
+            className="game-card w-full max-w-[400px] p-6 text-center space-y-4"
           >
-            <div className="text-5xl" role="img" aria-label="Celebration">
-              🏆🎉
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-coop-yellow border-2 border-[#3B2F2F] mx-auto">
+              <TrophyIcon className="w-10 h-10" />
             </div>
             <h3 className="font-heading text-2xl font-bold text-coop-text">
               Class Savings Goal Reached!
@@ -63,9 +40,9 @@ export function Celebration() {
             <button
               type="button"
               onClick={dismissCelebration}
-              className="w-full min-h-[52px] rounded-2xl bg-coop-yellow text-coop-text font-heading text-lg font-bold shadow-md hover:brightness-105 active:scale-95 transition"
+              className="btn-game-primary w-full min-h-[52px] text-lg"
             >
-              Awesome! (+{SEASON_BONUS_MINT} Coins)
+              Claim +{SEASON_BONUS_MINT} Coins
             </button>
           </motion.div>
         </div>

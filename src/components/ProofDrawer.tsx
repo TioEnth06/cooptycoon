@@ -50,10 +50,10 @@ export function ProofDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="w-full max-w-[420px] h-full bg-coop-card p-5 shadow-2xl flex flex-col justify-between overflow-y-auto"
+            className="w-full max-w-[420px] h-full bg-coop-card p-5 shadow-2xl border-l-4 border-[#3B2F2F] flex flex-col justify-between overflow-y-auto"
           >
             <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-amber-200 pb-3">
+              <div className="flex items-center justify-between border-b-2 border-[#3B2F2F]/15 pb-3">
                 <div>
                   <h3 className="font-heading text-xl font-bold text-coop-text">
                     Powered by NEAR testnet
@@ -70,14 +70,14 @@ export function ProofDrawer() {
                   type="button"
                   onClick={() => setShowProofDrawer(false)}
                   aria-label="Close Proof Drawer"
-                  className="min-w-[44px] min-h-[44px] rounded-2xl bg-coop-bg font-bold text-coop-text"
+                  className="btn-game-secondary min-w-[42px] min-h-[42px]"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Deployed Testnet Contracts Info */}
-              <div className="bg-coop-bg rounded-2xl p-3 border border-amber-200 text-xs space-y-1.5">
+              <div className="bg-coop-bg rounded-2xl p-3 border-2 border-[#3B2F2F] text-xs space-y-1.5">
                 <div className="flex justify-between gap-2">
                   <span className="font-bold text-coop-muted">Player ID:</span>
                   <span className="font-mono font-bold text-coop-text truncate">
@@ -115,7 +115,7 @@ export function ProofDrawer() {
                 </div>
 
                 {proofs.length === 0 ? (
-                  <p className="text-xs font-semibold text-coop-muted bg-coop-bg p-3 rounded-2xl">
+                  <p className="text-xs font-semibold text-coop-muted bg-coop-bg p-3 rounded-2xl border border-[#3B2F2F]/20">
                     Play a day, sell eggs, or request a hen purchase to see transaction proofs here.
                   </p>
                 ) : (
@@ -123,19 +123,19 @@ export function ProofDrawer() {
                     {proofs.map((p, idx) => (
                       <div
                         key={`${p.txId}-${idx}`}
-                        className="p-3 rounded-2xl bg-coop-bg border border-amber-200 text-xs space-y-1"
+                        className="p-3 rounded-2xl bg-coop-bg border-2 border-[#3B2F2F]/30 text-xs space-y-1"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-extrabold text-coop-text">
                             {p.label}
                           </span>
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                            className={`px-2 py-0.5 rounded-md border border-[#3B2F2F]/40 text-[10px] font-extrabold uppercase ${
                               p.status === 'confirmed'
-                                ? 'bg-coop-green/25 text-coop-text'
+                                ? 'bg-coop-green text-white'
                                 : p.status === 'pending'
-                                ? 'bg-coop-yellow/40 text-coop-text'
-                                : 'bg-coop-blue/30 text-coop-text'
+                                ? 'bg-coop-yellow text-coop-text'
+                                : 'bg-coop-blue/40 text-coop-text'
                             }`}
                           >
                             {p.status || 'mock'}
@@ -163,7 +163,7 @@ export function ProofDrawer() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-amber-200 space-y-2">
+            <div className="pt-4 border-t-2 border-[#3B2F2F]/15 space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -171,16 +171,16 @@ export function ProofDrawer() {
                     resetDemo();
                     setShowProofDrawer(false);
                   }}
-                  className="min-h-[42px] rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-300 text-xs font-extrabold text-coop-text"
+                  className="btn-game-secondary min-h-[42px] text-xs"
                 >
-                  🔄 Reset Game
+                  Reset Game
                 </button>
                 <button
                   type="button"
                   onClick={logout}
-                  className="min-h-[42px] rounded-2xl bg-coop-red/10 hover:bg-coop-red/20 border border-coop-red/40 text-xs font-extrabold text-coop-red"
+                  className="btn-game-red min-h-[42px] text-xs"
                 >
-                  🚪 Switch Account
+                  Switch Account
                 </button>
               </div>
               <p className="text-center text-xs font-bold text-coop-muted">

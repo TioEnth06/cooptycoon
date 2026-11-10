@@ -27,6 +27,14 @@ import {
   normalizeNearAccountId,
 } from '@/lib/nearAuth';
 import { ease } from '@/animation/tokens';
+import {
+  BoltIcon,
+  CoinIcon,
+  OwlAvatar,
+  ShieldIcon,
+  StarIcon,
+  TrophyIcon,
+} from '@/components/icons/GameIcons';
 
 export default function HomePage() {
   const loggedIn = useGameStore((s) => s.loggedIn);
@@ -51,7 +59,6 @@ export default function HomePage() {
   const [modalInput, setModalInput] = useState('');
   const [starting, setStarting] = useState(false);
 
-  // Detect optional URL callback (?account_id=...)
   useEffect(() => {
     const cb = consumeNearWalletCallback();
     if (cb) {
@@ -69,7 +76,7 @@ export default function HomePage() {
     return () => clearTimeout(t);
   }, [toast, clearToast]);
 
-  // 1. Login Screen (In-App NEAR FastAuth / Social Login + Guest Fallback)
+  // 1. Login Screen (Zero Emoji, Custom Vector Art + Tactile Buttons)
   if (!loggedIn) {
     const handleGuestStart = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -126,124 +133,154 @@ export default function HomePage() {
     };
 
     return (
-      <main className="min-h-screen max-w-[480px] mx-auto flex flex-col justify-center p-5 bg-coop-bg">
+      <main className="min-h-screen max-w-[480px] mx-auto flex flex-col justify-center p-5">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-coop-card rounded-3xl p-6 shadow-md border-4 border-coop-yellow space-y-4 text-center"
+          className="game-card overflow-hidden"
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-coop-yellow/25 border-2 border-coop-yellow text-5xl mx-auto">
-            🐔
-          </div>
-
-          <div className="space-y-1">
-            <h1 className="font-heading text-3xl font-bold text-coop-text">
+          {/* Illustrated Barn Roof Banner */}
+          <div className="bg-coop-red border-b-2 border-[#3B2F2F] pt-6 pb-5 px-6 text-center text-white">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-coop-card border-2 border-[#3B2F2F] shadow-[0_4px_0_0_#3B2F2F] mx-auto mb-3">
+              <svg viewBox="0 0 64 64" className="w-14 h-14" aria-hidden="true">
+                <ellipse cx="32" cy="52" rx="22" ry="6" fill="#E6C27A" />
+                <path
+                  d="M18 38 C18 24, 46 24, 46 38 C46 48, 38 52, 32 52 C24 52, 18 48, 18 38 Z"
+                  fill="#FFFFFF"
+                  stroke="#3B2F2F"
+                  strokeWidth="2.8"
+                />
+                <path
+                  d="M27 24 C27 19, 31 19, 32 23 C33 18, 38 19, 37 24"
+                  fill="#E5604D"
+                  stroke="#3B2F2F"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M25 36 C21 39, 23 45, 29 44"
+                  fill="none"
+                  stroke="#3B2F2F"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                />
+                <circle cx="38" cy="33" r="2.4" fill="#3B2F2F" />
+                <polygon
+                  points="45,33 52,36 45,39"
+                  fill="#FFC83D"
+                  stroke="#3B2F2F"
+                  strokeWidth="2"
+                />
+              </svg>
+            </div>
+            <h1 className="font-heading text-3xl font-bold tracking-tight">
               Coop Tycoon
             </h1>
-            <p className="text-sm font-bold text-coop-muted">
-              Run a cozy egg business, care for your hens, and learn saving &amp; investing!
+            <p className="text-xs font-bold text-white/90 mt-1 max-w-[300px] mx-auto">
+              Run a tiny egg business, care for your flock, and practice saving and investing.
             </p>
           </div>
 
-          <div className="bg-coop-bg rounded-2xl p-3 border border-amber-200 text-left space-y-1 text-xs font-bold text-coop-text">
-            <div className="flex items-center gap-2">
-              <span>🪙</span>
-              <span>Receive {STARTER_GRANT} starter coins + 1 free hen</span>
+          <div className="p-6 space-y-4">
+            {/* Feature Highlights */}
+            <div className="bg-coop-bg rounded-2xl p-3.5 border-2 border-[#3B2F2F] space-y-2 text-xs font-bold text-coop-text">
+              <div className="flex items-center gap-2.5">
+                <CoinIcon className="w-5 h-5 shrink-0" />
+                <span>Start with {STARTER_GRANT} coins and your first healthy hen</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <StarIcon className="w-5 h-5 shrink-0" filled />
+                <span>5 Career levels, 3 Crisis Challenges, and Sandbox mode</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <OwlAvatar className="w-5 h-5 shrink-0" />
+                <span>Guided by Professor Hoot and Class Guardian approvals</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span>🌟</span>
-              <span>Career (5 levels), 3 Crisis Challenges &amp; Sandbox</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>🦉</span>
-              <span>Guided by Professor Hoot &amp; a Class Guardian</span>
-            </div>
-          </div>
 
-          {/* Primary In-App NEAR & Social Login Options (Zero external broken redirects) */}
-          <div className="space-y-2 pt-1">
-            <button
-              type="button"
-              disabled={starting}
-              onClick={() => {
-                setModalInput('sunny.testnet');
-                setSocialModal('near');
-              }}
-              className="w-full min-h-[50px] px-4 rounded-2xl bg-coop-text text-white font-heading text-base font-bold shadow-sm hover:opacity-95 active:scale-95 transition flex items-center justify-center gap-2"
-            >
-              <span>🔑</span>
-              <span>Sign in with NEAR FastAuth</span>
-            </button>
-
-            <div className="grid grid-cols-2 gap-2">
+            {/* Social & NEAR Login Options */}
+            <div className="space-y-2.5">
               <button
                 type="button"
                 disabled={starting}
                 onClick={() => {
-                  setModalInput('sunny.farmer@gmail.com');
-                  setSocialModal('google');
+                  setModalInput('sunny.testnet');
+                  setSocialModal('near');
                 }}
-                className="min-h-[48px] px-3 rounded-2xl bg-coop-bg hover:bg-amber-100 active:scale-95 border-2 border-amber-200 font-heading text-sm font-bold text-coop-text flex items-center justify-center gap-1.5 transition"
+                className="w-full min-h-[50px] px-4 rounded-2xl bg-[#3B2F2F] text-white font-heading text-base font-bold border-2 border-[#3B2F2F] shadow-[0_4px_0_0_#1D1616] active:translate-y-[2px] active:shadow-[0_2px_0_0_#1D1616] transition-all flex items-center justify-center gap-2"
               >
-                <span>🌐</span>
-                <span>Google</span>
+                <ShieldIcon className="w-5 h-5" />
+                <span>Sign in with NEAR FastAuth</span>
               </button>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  disabled={starting}
+                  onClick={() => {
+                    setModalInput('sunny.farmer@gmail.com');
+                    setSocialModal('google');
+                  }}
+                  className="btn-game-secondary min-h-[46px] px-3 text-sm flex items-center justify-center gap-2"
+                >
+                  <span>Google</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={starting}
+                  onClick={() => void handlePasskeyLogin()}
+                  className="btn-game-secondary min-h-[46px] px-3 text-sm flex items-center justify-center gap-2"
+                >
+                  <span>Passkey</span>
+                </button>
+              </div>
+
               <button
                 type="button"
                 disabled={starting}
-                onClick={() => void handlePasskeyLogin()}
-                className="min-h-[48px] px-3 rounded-2xl bg-coop-bg hover:bg-amber-100 active:scale-95 border-2 border-amber-200 font-heading text-sm font-bold text-coop-text flex items-center justify-center gap-1.5 transition"
+                onClick={() => {
+                  setModalInput('sunny@school.edu');
+                  setSocialModal('email');
+                }}
+                className="btn-game-secondary w-full min-h-[42px] text-xs font-extrabold"
               >
-                <span>🔐</span>
-                <span>Passkey</span>
+                Continue with Email
               </button>
             </div>
 
-            <button
-              type="button"
-              disabled={starting}
-              onClick={() => {
-                setModalInput('sunny@school.edu');
-                setSocialModal('email');
-              }}
-              className="w-full min-h-[42px] rounded-2xl bg-coop-bg/70 hover:bg-amber-100/70 border border-amber-200 text-xs font-extrabold text-coop-text transition"
-            >
-              ✉️ Continue with Email
-            </button>
+            {/* Divider */}
+            <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-coop-muted">
+              <div className="flex-1 h-0.5 bg-[#3B2F2F]/15" />
+              <span>or quick guest play</span>
+              <div className="flex-1 h-0.5 bg-[#3B2F2F]/15" />
+            </div>
+
+            {/* Guest Login Fallback */}
+            <form onSubmit={handleGuestStart} className="flex items-center gap-2">
+              <input
+                id="nickname-input"
+                type="text"
+                maxLength={20}
+                value={nicknameInput}
+                onChange={(e) => setNicknameInput(e.target.value)}
+                placeholder="Your nickname..."
+                aria-label="Farmer Nickname"
+                className="flex-1 min-h-[50px] px-3.5 rounded-2xl bg-coop-bg border-2 border-[#3B2F2F] font-heading text-base font-bold text-coop-text focus:outline-none focus:bg-white"
+              />
+              <button
+                type="submit"
+                disabled={starting}
+                className="btn-game-primary min-h-[50px] px-5 text-base shrink-0"
+              >
+                {starting ? '...' : 'Play →'}
+              </button>
+            </form>
+
+            <p className="text-center text-xs font-bold text-coop-muted">
+              Virtual coins for learning. No real money.
+            </p>
           </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-2 text-[11px] font-extrabold uppercase text-coop-muted">
-            <div className="flex-1 h-px bg-amber-200" />
-            <span>or quick guest play</span>
-            <div className="flex-1 h-px bg-amber-200" />
-          </div>
-
-          {/* Guest Login Fallback */}
-          <form onSubmit={handleGuestStart} className="flex items-center gap-2">
-            <input
-              id="nickname-input"
-              type="text"
-              maxLength={20}
-              value={nicknameInput}
-              onChange={(e) => setNicknameInput(e.target.value)}
-              placeholder="Your nickname..."
-              aria-label="Farmer Nickname"
-              className="flex-1 min-h-[50px] px-3.5 rounded-2xl bg-coop-bg border-2 border-amber-200 font-heading text-base font-bold text-coop-text focus:outline-none focus:border-coop-yellow"
-            />
-            <button
-              type="submit"
-              disabled={starting}
-              className="min-h-[50px] px-5 rounded-2xl bg-coop-yellow hover:brightness-105 active:scale-95 text-coop-text font-heading text-base font-bold shadow-sm border-2 border-amber-400 transition shrink-0"
-            >
-              {starting ? '...' : 'Play! 🌾'}
-            </button>
-          </form>
-
-          <p className="text-xs font-bold text-coop-muted">
-            Virtual coins for learning. No real money.
-          </p>
         </motion.div>
 
         {/* In-App NEAR FastAuth / Google / Email Modal */}
@@ -256,17 +293,13 @@ export default function HomePage() {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="w-full max-w-[400px] bg-coop-card rounded-3xl p-5 shadow-2xl border-4 border-coop-yellow space-y-4 text-left"
+                className="game-card w-full max-w-[400px] p-5 space-y-4 text-left"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">
-                      {socialModal === 'near'
-                        ? '🔑'
-                        : socialModal === 'google'
-                        ? '🌐'
-                        : '✉️'}
-                    </span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-coop-blue/30 border-2 border-[#3B2F2F] flex items-center justify-center">
+                      <ShieldIcon className="w-6 h-6" />
+                    </div>
                     <div>
                       <h2 className="font-heading text-lg font-bold text-coop-text">
                         {socialModal === 'near'
@@ -276,14 +309,14 @@ export default function HomePage() {
                           : 'Continue with Email'}
                       </h2>
                       <p className="text-xs font-bold text-coop-muted">
-                        Instant account setup • Zero gas or wallet popup
+                        Instant account setup • Zero gas prompts
                       </p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSocialModal(null)}
-                    className="min-w-[38px] min-h-[38px] rounded-xl bg-coop-bg font-bold text-coop-text"
+                    className="btn-game-secondary min-w-[38px] min-h-[38px]"
                   >
                     ✕
                   </button>
@@ -305,7 +338,7 @@ export default function HomePage() {
                         ? 'e.g. sunny.testnet'
                         : 'you@example.com'
                     }
-                    className="w-full min-h-[48px] px-3.5 rounded-2xl bg-coop-bg border-2 border-amber-200 font-heading text-base font-bold text-coop-text focus:outline-none focus:border-coop-yellow"
+                    className="w-full min-h-[48px] px-3.5 rounded-2xl bg-coop-bg border-2 border-[#3B2F2F] font-heading text-base font-bold text-coop-text focus:outline-none focus:bg-white"
                   />
                   <p className="text-[11px] font-bold text-coop-muted mt-1.5">
                     {socialModal === 'near'
@@ -318,14 +351,14 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={() => setSocialModal(null)}
-                    className="flex-1 min-h-[48px] rounded-2xl bg-coop-bg font-heading text-sm font-bold text-coop-muted"
+                    className="btn-game-secondary flex-1 min-h-[48px] text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={starting}
-                    className="flex-1 min-h-[48px] rounded-2xl bg-coop-green text-white font-heading text-base font-bold shadow-md hover:opacity-95 active:scale-95 transition"
+                    className="btn-game-green flex-1 min-h-[48px] text-base"
                   >
                     {starting ? 'Connecting...' : 'Continue →'}
                   </button>
@@ -365,11 +398,11 @@ export default function HomePage() {
   const goalProgress = getGoalProgress(game, levelDef);
 
   return (
-    <div className="min-h-screen max-w-[480px] mx-auto flex flex-col justify-between bg-coop-bg shadow-sm">
+    <div className="min-h-screen max-w-[480px] mx-auto flex flex-col justify-between">
       {/* TopBar */}
       <TopBar />
 
-      {/* Sequenced Next Day Animation Overlay (Tap anywhere to skip) */}
+      {/* Sequenced Next Day Animation Overlay */}
       <DayCycleOverlay
         step={daySequenceStep}
         dayNumber={game.day}
@@ -386,7 +419,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="mx-4 mt-2 px-3.5 py-2 rounded-2xl bg-coop-card border border-amber-300 text-xs font-bold text-coop-text shadow-sm text-center"
+            className="game-card mx-4 mt-2 px-3.5 py-2 text-xs font-bold text-coop-text text-center"
           >
             {toast.text}
           </motion.div>
@@ -399,16 +432,20 @@ export default function HomePage() {
         <button
           type="button"
           onClick={() => setActiveSheet('class_goal')}
-          className={`w-full bg-coop-card rounded-2xl px-3.5 py-2.5 border-2 shadow-sm flex items-center justify-between gap-3 text-left transition ${
-            goalProgress.percent >= 100
-              ? 'border-coop-green ring-2 ring-coop-green/40'
-              : 'border-amber-200 hover:bg-amber-50/50'
+          className={`game-card w-full px-3.5 py-2.5 flex items-center justify-between gap-3 text-left active:translate-y-[2px] active:shadow-[0_2px_0_0_#3B2F2F] transition-all ${
+            goalProgress.percent >= 100 ? 'ring-2 ring-coop-green' : ''
           }`}
         >
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xl" role="img" aria-label="Goal Target">
-              {mode === 'challenge' ? '⚡' : mode === 'career' ? '🎯' : '🏆'}
-            </span>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-coop-yellow/35 border-2 border-[#3B2F2F] flex items-center justify-center shrink-0">
+              {mode === 'challenge' ? (
+                <BoltIcon className="w-5 h-5" />
+              ) : mode === 'career' ? (
+                <StarIcon className="w-5 h-5" filled />
+              ) : (
+                <TrophyIcon className="w-5 h-5" />
+              )}
+            </div>
             <div className="min-w-0">
               <div className="text-xs font-extrabold text-coop-text truncate">
                 {levelDef
@@ -421,12 +458,12 @@ export default function HomePage() {
             </div>
           </div>
           <div className="w-24 shrink-0">
-            <div className="w-full h-2.5 bg-coop-bg rounded-full overflow-hidden border border-amber-200">
+            <div className="w-full h-3 bg-coop-bg rounded-full overflow-hidden border-2 border-[#3B2F2F]">
               <motion.div
                 initial={false}
                 animate={{ width: `${goalProgress.percent}%` }}
                 transition={{ duration: 0.5, ease: ease.out }}
-                className="h-full bg-coop-green rounded-full"
+                className="h-full bg-coop-green"
               />
             </div>
             <div className="text-[10px] font-extrabold text-right text-coop-green mt-0.5">
