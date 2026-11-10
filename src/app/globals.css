@@ -11,6 +11,8 @@
   --blue: #7CC4F0;
   --text: #3B2F2F;
   --muted: #8A7A70;
+  --font-fredoka: 'Fredoka', system-ui, -apple-system, sans-serif;
+  --font-nunito: 'Nunito', system-ui, -apple-system, sans-serif;
 }
 
 body {

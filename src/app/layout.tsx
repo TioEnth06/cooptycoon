@@ -1,18 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Fredoka, Nunito } from 'next/font/google';
 import './globals.css';
-
-const fredoka = Fredoka({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--font-fredoka',
-});
-
-const nunito = Nunito({
-  subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
-  variable: '--font-nunito',
-});
 
 export const metadata: Metadata = {
   title: 'Coop Tycoon | Cozy Egg Business Sim',
@@ -32,7 +19,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fredoka.variable} ${nunito.variable}`}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen bg-coop-bg text-coop-text antialiased">
         {children}
       </body>
