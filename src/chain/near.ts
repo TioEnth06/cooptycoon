@@ -106,17 +106,35 @@ export class NearChainAdapter implements ChainAdapter {
   }
 
   async ensureAccount(nickname: string): Promise<{ accountId: string }> {
+    const trimmed = nickname.trim().toLowerCase();
+    const treasury = this.treasuryAccount;
+
+    // If caller passed a full .testnet account (e.g. from MyNearWallet / FastAuth redirect)
+    if (trimmed.endsWith('.testnet') && !trimmed.includes(' ')) {
+      try {
+        await treasury.callFunctionRaw({
+          contractId: this.ftContractId,
+          methodName: 'storage_deposit',
+          args: {
+            account_id: trimmed,
+            registration_only: true,
+          },
+          gas: DEFAULT_GAS,
+          deposit: STORAGE_DEPOSIT_YOCTO,
+        });
+      } catch {
+        // Ignore if already registered
+      }
+      return { accountId: trimmed };
+    }
+
     const clean =
-      nickname
-        .toLowerCase()
-        .replace(/[^a-z0-9_-]/g, '')
-        .slice(0, 16) || 'player';
+      trimmed.replace(/[^a-z0-9_-]/g, '').slice(0, 16) || 'player';
     const root =
       process.env.ROOT_ACCOUNT ||
       process.env.TREASURY_ACCOUNT ||
       'coop.testnet';
     const targetAccountId = root;
-    const treasury = this.treasuryAccount;
 
     await treasury.callFunctionRaw({
       contractId: this.ftContractId,
@@ -137,7 +155,10 @@ export class NearChainAdapter implements ChainAdapter {
     if (root && accountId.endsWith(`.${root}`)) {
       return root;
     }
-    return accountId;
+    if (accountId.endsWith('.testnet')) {
+      return accountId;
+    }
+    return root || accountId;
   }
 
   async grantStarter(accountId: string, amount: number): Promise<TxProof> {

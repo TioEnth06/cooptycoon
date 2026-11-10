@@ -32,6 +32,8 @@ A turn-based simulation: buy hens, feed and clean the coop, sell eggs to an NPC 
 8. Class goal progress rises; reaching it triggers a season bonus.
 
 ## In scope (build these)
+- Game modes: Career (5 levels), Challenge (3 scenarios), Sandbox. See `docs/GAME_MODES.md`.
+- Game feel: animations per `docs/ANIMATION.md`.
 - Single player screen, mobile-first.
 - One animal (hen), one product (egg), max 5 hens.
 - Day-by-day simulation with a "Next Day" button.

@@ -4,30 +4,40 @@ Rule: finish a task, run it, commit, then move on. If a task is blocked >30 min,
 
 ## Day 0 (setup, before Day 1)
 - [x] T0.1 Read `HACKATHON.md` and the track prompts (Games 09, Memecoins 11, Social 12) from github.com/nearai/near-hackathon-prompt-examples; summarize into `docs/RESEARCH_NOTES.md`: social login method, FT contract example, Sputnik proposal kinds.
-- [ ] T0.2 Create public GitHub repo, push these docs.
-- [ ] T0.3 Create NEAR testnet accounts: root, treasury, npc, guardian (`near create-account <name>.testnet --useFaucet`). Fund via faucet; see funding checklist in `docs/NEAR_REFERENCES.md`.
+- [x] T0.2 Create public GitHub repo, push these docs.
+- [x] T0.3 Create NEAR testnet accounts: root, treasury, npc, guardian (`near create-account <name>.testnet --useFaucet`). Fund via faucet; see funding checklist in `docs/NEAR_REFERENCES.md`.
 - [x] T0.4 Copy the must-read pages from `docs/NEAR_REFERENCES.md` into `docs/near-refs/` (or add as Cursor @Docs).
-- [ ] T0.5 Deploy the FT contract (near-examples/FT) to testnet, `storage_deposit` for NPC/guardian, verify `ft_transfer` works from CLI.
-- [ ] T0.6 Create the Sputnik DAO on testnet (factory `sputnikv2.testnet`), add the guardian as council, test one proposal + `act_proposal` from CLI.
+- [x] T0.5 Deploy the FT contract (near-examples/FT) to testnet, `storage_deposit` for NPC/guardian, verify `ft_transfer` works from CLI.
+- [x] T0.6 Create the Sputnik DAO on testnet (factory `sputnikv2.testnet`), add the guardian as council, test one proposal + `act_proposal` from CLI.
 
 ## Day 1: foundation and game loop
-- [ ] T1.1 (1h) Scaffold Next.js + TS + Tailwind + Framer Motion + Zustand + Vitest. Add `.env.example`, `.gitignore`. Create `src/` folders from ARCHITECTURE.md.
-- [ ] T1.2 (1h) `src/game/constants.ts`, `types.ts`, `rng.ts` from GAME_RULES.md.
-- [ ] T1.3 (2h) `engine.ts` `nextDay`, `market.ts` `eggPrice`/`sell`, plus Vitest tests (price clamp, tick order, sickness with fixed seed, savings penalty).
-- [ ] T1.4 (1h) `mentor.ts` with all triggers from GAME_RULES.md.
-- [ ] T1.5 (2h) Main screen UI: TopBar (balance, day), Coop with hens, ActionBar (Feed is automatic in tick; buttons: Clean, Medicine, Sell Eggs, Next Day, Save/Withdraw), MentorBubble. Mobile-first. Use DESIGN.md.
-- [ ] T1.6 (1h) `MockChainAdapter` + `ChainAdapter` + `/api/chain/*` routes wired to the store. Game fully playable in mock mode.
-- [ ] T1.7 (1h) Tutorial flow (tutorialStep) and starter grant.
+- [x] T1.1 (1h) Scaffold Next.js + TS + Tailwind + Framer Motion + Zustand + Vitest. Add `.env.example`, `.gitignore`. Create `src/` folders from ARCHITECTURE.md.
+- [x] T1.2 (1h) `src/game/constants.ts`, `types.ts`, `rng.ts` from GAME_RULES.md.
+- [x] T1.3 (2h) `engine.ts` `nextDay`, `market.ts` `eggPrice`/`sell`, plus Vitest tests (price clamp, tick order, sickness with fixed seed, savings penalty).
+- [x] T1.4 (1h) `mentor.ts` with all triggers from GAME_RULES.md.
+- [x] T1.5 (2h) Main screen UI: TopBar (balance, day), Coop with hens, ActionBar (Feed is automatic in tick; buttons: Clean, Medicine, Sell Eggs, Next Day, Save/Withdraw), MentorBubble. Mobile-first. Use DESIGN.md.
+- [x] T1.6 (1h) `MockChainAdapter` + `ChainAdapter` + `/api/chain/*` routes wired to the store. Game fully playable in mock mode.
+- [x] T1.7 (1h) Tutorial flow (tutorialStep) and starter grant.
 **Day 1 done when:** a new player can login as guest, get 100 COOP, free hen, play 3 days, sell eggs, see mentor messages, all in mock mode.
 
 ## Day 2: chain, social, demo, submit
-- [ ] T2.1 (2h) `NearChainAdapter`: ensureAccount (+storage_deposit), grantStarter, payout, burnOrFee using the FT contract. Test on testnet.
-- [ ] T2.2 (1.5h) Sputnik DAO: proposeBuy + approve; ApprovalModal with guardian button.
-- [ ] T2.3 (1h) Class goal: 4 simulated classmates, ClassGoal bar, season bonus mint, Celebration animation.
-- [ ] T2.4 (1h) ProofDrawer listing tx links; demo mode (seeded events, fast-forward 3 days).
-- [ ] T2.5 (1h) Polish animations (egg pop, coin fly, sick hen, mentor bubble) per DESIGN.md.
-- [ ] T2.6 (1h) README per `docs/SUBMISSION.md`, `.env.example` check, fresh-clone test in mock mode.
+- [x] T2.1 (2h) `NearChainAdapter`: ensureAccount (+storage_deposit), grantStarter, payout, burnOrFee using the FT contract. Test on testnet.
+- [x] T2.2 (1.5h) Sputnik DAO: proposeBuy + approve; ApprovalModal with guardian button.
+- [x] T2.3 (1h) Class goal: 4 simulated classmates, ClassGoal bar, season bonus mint, Celebration animation.
+- [x] T2.4 (1h) ProofDrawer listing tx links; demo mode (seeded events, fast-forward 3 days).
+- [x] T2.5 (1h) Polish animations (egg pop, coin fly, sick hen, mentor bubble) per DESIGN.md.
+- [x] T2.6 (1h) README per `docs/SUBMISSION.md`, `.env.example` check, fresh-clone test in mock mode.
 - [ ] T2.7 (1h) Record demo per `docs/DEMO_SCRIPT.md`; post on X; submit form.
+
+## Game mode and animation upgrade (do before polish; see GAME_MODES.md and ANIMATION.md)
+- [x] G1 `levels.ts` + level state + win/lose checks + stars
+- [x] G2 Home/mode select, level select, level intro, HUD goal bar, "Day x/y"
+- [x] G3 End-of-day summary, level complete/failed/bankrupt screens
+- [x] G4 Daily quests + badges
+- [x] G5 Challenge scenarios + Sandbox rescue grant
+- [x] A1 (P0) animation tokens, hen idle/sick/eat, egg pop, coin fly, count-up, button press, day cycle
+- [x] A2 (P1) level complete stars, goal bar, quest check, game over, price arrow
+- [x] A3 (P2) confetti, ambient scene, badge toast, optional SFX (muted by default)
 
 ## Buffer (Nov 13-14)
 Fix bugs only. No new features. Submit before 14 Nov 2026, 23:59 UTC (aim for 13 Nov).

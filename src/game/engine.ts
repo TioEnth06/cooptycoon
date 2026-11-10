@@ -79,6 +79,13 @@ export function createInitialGameState(seed: number = DEMO_SEED): GameState {
     dailyIncome: 0,
     dailyExtraCosts: 0,
     seasonGoalReachedInSeason: false,
+    totalEggsSold: 0,
+    dailyEggsSold: 0,
+    totalSickHenDays: 0,
+    hensLost: 0,
+    jarHoldDaysAt100: 0,
+    cleanDaysStreak: 0,
+    sandboxRescueUsed: false,
   };
 }
 
@@ -101,7 +108,13 @@ export type NextDayResult = {
  * 9. Generate mentor message (see triggers).
  * 10. Check class goal.
  */
-export function nextDay(prevState: GameState): NextDayResult {
+export function nextDay(
+  prevState: GameState,
+  options?: {
+    forcedEvents?: { day: number; type: 'feed_spike'; days: number }[];
+    isSandbox?: boolean;
+  }
+): NextDayResult {
   const events: DayEvent[] = [];
   let rngState = prevState.rngState;
   let balance = prevState.balance;
@@ -265,7 +278,27 @@ export function nextDay(prevState: GameState): NextDayResult {
   // 6. Feed event: if no spike active and rng < 0.15, start spike for FEED_SPIKE_DAYS; decrement active spike.
   let feedSpikeDaysLeft = prevState.feedSpikeDaysLeft;
   const spikeRoll = drawRng();
-  if (feedSpikeDaysLeft > 0) {
+  const nextDayNumber = prevState.day + 1;
+  const forcedSpike = options?.forcedEvents?.find(
+    (fe) => fe.type === 'feed_spike' && fe.day === nextDayNumber
+  );
+
+  if (forcedSpike) {
+    feedSpikeDaysLeft = forcedSpike.days;
+    const spikedPrice =
+      Math.round(
+        FEED_BASE_PRICE *
+          FEED_SPIKE_MULT *
+          (prevState.reputation >= REPUTATION_PERK_THRESHOLD
+            ? 1 - GOLD_FEED_BAG_DISCOUNT
+            : 1) *
+          100
+      ) / 100;
+    events.push({
+      type: 'feed_spike_started',
+      data: { days: forcedSpike.days, price: spikedPrice },
+    });
+  } else if (feedSpikeDaysLeft > 0) {
     feedSpikeDaysLeft = Math.max(0, feedSpikeDaysLeft - 1);
   } else if (spikeRoll < FEED_SPIKE_CHANCE) {
     feedSpikeDaysLeft = FEED_SPIKE_DAYS;
@@ -333,8 +366,44 @@ export function nextDay(prevState: GameState): NextDayResult {
     });
   }
 
+  // Track level stats: sick hen days, hens lost, jar >= 100 hold days, cleanliness >= 60 streak
+  const sickTodayCount = survivingHens.filter((h) => h.sickDays > 0).length;
+  const diedTodayCount = events.filter((e) => e.type === 'hen_died').length;
+  const totalSickHenDays =
+    (prevState.totalSickHenDays ?? 0) + sickTodayCount + diedTodayCount;
+  const hensLost = (prevState.hensLost ?? 0) + diedTodayCount;
+  const jarHoldDaysAt100 =
+    jar >= 100 ? (prevState.jarHoldDaysAt100 ?? 0) + 1 : 0;
+  const cleanDaysStreak =
+    cleanliness >= 60 ? (prevState.cleanDaysStreak ?? 0) + 1 : 0;
+
+  // Sandbox rescue grant: if bankrupt in sandbox and not yet used, grant 20 coins
+  let sandboxRescueUsed = prevState.sandboxRescueUsed ?? false;
+  const nextFeedRequirement =
+    survivingHens.length *
+    getFeedPricePerHen({ feedSpikeDaysLeft, reputation });
+  if (
+    options?.isSandbox &&
+    !sandboxRescueUsed &&
+    balance < nextFeedRequirement &&
+    eggs === 0 &&
+    jar === 0
+  ) {
+    balance = Math.round((balance + 20) * 100) / 100;
+    sandboxRescueUsed = true;
+    events.push({
+      type: 'sandbox_rescue',
+      data: { grant: 20 },
+    });
+  }
+
   // 9. Generate mentor message (see triggers).
   const mentorMessages = generateMentorMessages(events);
+  if (events.some((e) => e.type === 'sandbox_rescue')) {
+    mentorMessages.unshift(
+      'You ran out of coins, so the Coop Rescue Fund gave you 20 coins! Try keeping a small emergency reserve in your Savings Jar.'
+    );
+  }
 
   const nextState: GameState = {
     ...prevState,
@@ -354,6 +423,13 @@ export function nextDay(prevState: GameState): NextDayResult {
     dailyIncome: 0,
     dailyExtraCosts: 0,
     seasonGoalReachedInSeason,
+    totalEggsSold: prevState.totalEggsSold ?? 0,
+    dailyEggsSold: 0,
+    totalSickHenDays,
+    hensLost,
+    jarHoldDaysAt100,
+    cleanDaysStreak,
+    sandboxRescueUsed,
   };
 
   return {

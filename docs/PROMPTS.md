@@ -46,3 +46,28 @@ Always start a new chat per task. Attach `@docs/PRD.md @docs/GAME_RULES.md @docs
 
 ## Bug-fix prompt
 "Here is the error: <paste>. Find the root cause, fix minimally, run build and tests, and do not refactor unrelated code."
+
+
+## G1 Levels
+"Read @docs/GAME_MODES.md. Implement src/game/levels.ts with the 5 career levels, LevelDef type, netWorth(), goal checking, stars, and bankrupt detection as pure functions with Vitest tests. Do not change UI yet."
+
+## G2 Mode select and HUD
+"Implement the Home/mode select, level select, level intro card, and HUD additions (goal progress bar, 'Day x/y') from @docs/GAME_MODES.md using the style in @docs/DESIGN.md. Wire to levels.ts. Keep sandbox working."
+
+## G3 End screens
+"Add end-of-day summary sheet and level complete / failed / bankrupt screens per @docs/GAME_MODES.md. Mentor line must tie to the level concept. Never use shaming text."
+
+## G4 Quests and badges
+"Add daily quests (3 per day, deterministic) and the badges sheet per @docs/GAME_MODES.md. Quest rewards are reputation only, never coins."
+
+## G5 Challenges
+"Add the 3 Challenge scenarios and the sandbox rescue grant per @docs/GAME_MODES.md."
+
+## A1 Core animations (P0)
+"Read @docs/ANIMATION.md. Implement tokens.ts and the P0 animations: hen idle/sick/eat, egg pop, coin fly to balance, count-up with flash, button press, day cycle, and sequence Next Day events in order with tap-to-skip. Respect prefers-reduced-motion. Use only transform and opacity."
+
+## A2 Progress animations (P1)
+"Implement the P1 animations from @docs/ANIMATION.md: level-complete stars, goal bar fill and glow, quest check pop, gentle game over, price arrow pulse."
+
+## A3 Extra juice (P2)
+"Implement P2 from @docs/ANIMATION.md: emoji confetti, ambient clouds/grass, badge toast, and optional SFX muted by default with a visible toggle. No new heavy dependencies."

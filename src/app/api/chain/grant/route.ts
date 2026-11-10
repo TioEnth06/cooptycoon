@@ -5,7 +5,7 @@ import { STARTER_GRANT } from '@/game/constants';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const nickname = String(body.nickname || 'farmer');
+    const nickname = String(body.accountId || body.nickname || 'farmer');
     const amount = Number(body.amount ?? STARTER_GRANT);
 
     const adapter = getChainAdapter();

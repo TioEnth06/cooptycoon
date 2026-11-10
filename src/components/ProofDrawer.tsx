@@ -17,7 +17,9 @@ export function ProofDrawer() {
   const setShowProofDrawer = useGameStore((s) => s.setShowProofDrawer);
   const proofs = useGameStore((s) => s.proofs);
   const accountId = useGameStore((s) => s.accountId);
+  const authMethod = useGameStore((s) => s.authMethod);
   const resetDemo = useGameStore((s) => s.resetDemo);
+  const logout = useGameStore((s) => s.logout);
 
   const [statusInfo, setStatusInfo] = useState<ChainStatusInfo | null>(null);
 
@@ -61,7 +63,7 @@ export function ProofDrawer() {
                     <span className="uppercase font-extrabold text-coop-text">
                       {statusInfo?.mode || 'mock'}
                     </span>{' '}
-                    • Network: {statusInfo?.network || 'testnet'}
+                    • Login: <span className="uppercase">{authMethod}</span>
                   </p>
                 </div>
                 <button
@@ -117,7 +119,7 @@ export function ProofDrawer() {
                     Play a day, sell eggs, or request a hen purchase to see transaction proofs here.
                   </p>
                 ) : (
-                  <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
                     {proofs.map((p, idx) => (
                       <div
                         key={`${p.txId}-${idx}`}
@@ -161,17 +163,26 @@ export function ProofDrawer() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-amber-200 space-y-3">
-              <button
-                type="button"
-                onClick={() => {
-                  resetDemo();
-                  setShowProofDrawer(false);
-                }}
-                className="w-full min-h-[44px] rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-300 text-xs font-extrabold text-coop-text"
-              >
-                🔄 Reset Demo Session (Seed 42)
-              </button>
+            <div className="pt-4 border-t border-amber-200 space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetDemo();
+                    setShowProofDrawer(false);
+                  }}
+                  className="min-h-[42px] rounded-2xl bg-coop-bg hover:bg-amber-100 border border-amber-300 text-xs font-extrabold text-coop-text"
+                >
+                  🔄 Reset Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="min-h-[42px] rounded-2xl bg-coop-red/10 hover:bg-coop-red/20 border border-coop-red/40 text-xs font-extrabold text-coop-red"
+                >
+                  🚪 Switch Account
+                </button>
+              </div>
               <p className="text-center text-xs font-bold text-coop-muted">
                 Virtual coins for learning. No real money.
               </p>

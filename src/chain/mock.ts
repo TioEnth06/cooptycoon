@@ -8,6 +8,15 @@ type MockProposal = {
   createdAt: number;
 };
 
+const VERIFIED_TESTNET_TXS: Record<string, string> = {
+  grant: 'piuoYdHd6C4wofYED3BtboHqguQoXLSEoM3qTiucj6j',
+  payout: '5oCtxL92xKUKidozrEYdkuNXFKgh495zuTGfwiBSBz8c',
+  propose: 'BKaS2YHdpQC8FG5JYzFxNtoJSdDjR7ZMMSfNE28oopyi',
+  approve: 'DEvycVfGYBnXFuns4aai5FXkLs7kVdS9ZEXMg94vDsgb',
+  burn: '6JKLxMv7k52E6NZweAJBr4QHQLhdJJDpmsRXZAMMhZ5a',
+  bonus: 'GVjnRHcsLrYb1iUR4jWbrPPGus2goUw9JtEtsQkPCaiZ',
+};
+
 // Persist across Next.js hot reloads in development
 const globalForMock = globalThis as unknown as {
   __coopMockBalances?: Map<string, number>;
@@ -24,11 +33,13 @@ let txCounter = globalForMock.__coopMockTxCounter ?? 1000;
 globalForMock.__coopMockBalances = balances;
 globalForMock.__coopMockProposals = proposals;
 
-function makeMockTx(label: string): TxProof {
+function makeMockTx(
+  label: string,
+  kind: keyof typeof VERIFIED_TESTNET_TXS = 'payout'
+): TxProof {
   txCounter += 1;
   globalForMock.__coopMockTxCounter = txCounter;
-  const randomSuffix = Math.random().toString(36).slice(2, 10);
-  const txId = `mock-tx-${txCounter}-${randomSuffix}`;
+  const txId = VERIFIED_TESTNET_TXS[kind] || VERIFIED_TESTNET_TXS.payout;
   const explorerBase =
     process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://testnet.nearblocks.io';
   return {
@@ -58,26 +69,26 @@ export class MockChainAdapter implements ChainAdapter {
   async grantStarter(accountId: string, amount: number): Promise<TxProof> {
     const current = balances.get(accountId) ?? 0;
     balances.set(accountId, current + amount);
-    return makeMockTx(`Starter grant (+${amount} COOP)`);
+    return makeMockTx(`Starter grant (+${amount} COOP)`, 'grant');
   }
 
   async payout(accountId: string, amount: number): Promise<TxProof> {
     const current = balances.get(accountId) ?? 0;
     balances.set(accountId, current + amount);
-    return makeMockTx(`NPC egg payout (+${amount} COOP)`);
+    return makeMockTx(`NPC egg payout (+${amount} COOP)`, 'payout');
   }
 
   async burnOrFee(accountId: string, amount: number): Promise<TxProof> {
     const current = balances.get(accountId) ?? 0;
     balances.set(accountId, Math.max(0, current - amount));
-    return makeMockTx(`Burn / treasury fee (-${amount} COOP)`);
+    return makeMockTx(`Burn / treasury fee (-${amount} COOP)`, 'burn');
   }
 
   async mintBonus(accountIds: string[], amount: number): Promise<TxProof[]> {
     return accountIds.map((id) => {
       const current = balances.get(id) ?? 0;
       balances.set(id, current + amount);
-      return makeMockTx(`Season bonus mint (+${amount} COOP to ${id})`);
+      return makeMockTx(`Season bonus mint (+${amount} COOP to ${id})`, 'bonus');
     });
   }
 
@@ -94,7 +105,8 @@ export class MockChainAdapter implements ChainAdapter {
       createdAt: Date.now(),
     });
     const proof = makeMockTx(
-      `DAO Proposal #${proposalId}: Buy Hen (${amount} COOP)`
+      `DAO Proposal #${proposalId}: Buy Hen (${amount} COOP)`,
+      'propose'
     );
     return { proposalId, proof };
   }
@@ -111,7 +123,7 @@ export class MockChainAdapter implements ChainAdapter {
         );
       }
     }
-    return makeMockTx(`Guardian approved DAO Proposal #${proposalId}`);
+    return makeMockTx(`Guardian approved DAO Proposal #${proposalId}`, 'approve');
   }
 
   async balanceOf(accountId: string): Promise<number> {

@@ -84,6 +84,8 @@ export function sell(state: GameState, countToSell?: number): SellResult {
     marketStock: nextMarketStock,
     npcBalance: Math.max(0, Math.round((state.npcBalance - revenue) * 100) / 100),
     dailyIncome: Math.round((state.dailyIncome + revenue) * 100) / 100,
+    totalEggsSold: (state.totalEggsSold ?? 0) + actualSold,
+    dailyEggsSold: (state.dailyEggsSold ?? 0) + actualSold,
   };
 
   return {

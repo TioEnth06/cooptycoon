@@ -15,6 +15,8 @@ export type PendingApproval = {
   proposalId: string;
 };
 
+export type GameMode = 'career' | 'challenge' | 'sandbox';
+
 export type GameState = {
   day: number;
   balance: number; // mirrors onchain balance
@@ -36,6 +38,15 @@ export type GameState = {
   dailyIncome: number; // tracks egg sale income during the current day
   dailyExtraCosts: number; // tracks clean/medicine costs during the current day
   seasonGoalReachedInSeason: boolean;
+
+  // Extended tracking for GAME_MODES.md (levels, challenges, quests, badges)
+  totalEggsSold: number;
+  dailyEggsSold: number;
+  totalSickHenDays: number;
+  hensLost: number;
+  jarHoldDaysAt100: number;
+  cleanDaysStreak: number; // cleanliness >= 60 streak
+  sandboxRescueUsed: boolean;
 };
 
 export type DayEvent = {
@@ -55,6 +66,7 @@ export type DayEvent = {
     | 'profit_day'
     | 'loss_day'
     | 'price_low'
-    | 'npc_low_funds';
+    | 'npc_low_funds'
+    | 'sandbox_rescue';
   data?: Record<string, number | string>;
 };

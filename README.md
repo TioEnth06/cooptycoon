@@ -95,6 +95,15 @@ See [`contracts/README.md`](contracts/README.md) and [`contracts/deployed-testne
 ## Architecture Overview
 
 - **Frontend & State:** Next.js (App Router), TypeScript, Tailwind CSS, Framer Motion, and Zustand (`src/store/gameStore.ts`).
+- **Social & Testnet Login (`src/lib/nearAuth.ts`):**
+  - Supports **NEAR Testnet Login / FastAuth** (`testnet.mynearwallet.com`), one-click **Google**, **Passkey (WebAuthn)**, and **Email** sign-in, plus **Guest Nickname Login** as a zero-friction fallback.
+- **Game Modes (`src/game/levels.ts` & `src/game/quests.ts`):**
+  - **Career Mode:** 5 progressive levels (*First eggs*, *Growing flock*, *Feed crisis*, *Patient saver*, *Class goal*) with 1–3 star ratings, unlock progression, and level completion bonuses.
+  - **Challenge Mode:** 3 ready-made crisis scenarios (*Feed Crisis*, *Sick Coop*, *Egg Glut*).
+  - **Sandbox Mode:** Free play with no day limit and a one-time 20-coin emergency rescue grant.
+  - **Daily Quests & 7 Badges:** 3 deterministic daily quests rewarding `+1 Reputation` each, plus 7 collectible farm badges.
+- **Animation System (`src/animation/tokens.ts` & `src/components/Animations.tsx`):**
+  - Shared timing tokens (`dur`, `ease`), curved coin flight (`<CoinFly />` via `getBoundingClientRect()`), sequenced `Next Day` playback with tap-to-skip, 24-emoji confetti burst, ambient drifting clouds/grass, and muted-by-default WebAudio SFX toggle.
 - **Pure Game Engine (`src/game/`):**
   - `constants.ts`: Single source of truth for all numbers (`STARTER_GRANT = 100`, `HEN_PRICE = 30`, `CLEAN_COST = 3`, `MEDICINE_COST = 8`, etc.).
   - `rng.ts`: Seeded `mulberry32` PRNG (`DEMO_SEED = 42` in demo mode).
