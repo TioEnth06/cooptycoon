@@ -29,9 +29,9 @@ Currency: **COOP** (virtual token, testnet). Time: **Day** (one tick per "Next D
 | SICK_DEATH_DAYS | 3 | untreated sick hen dies on 3rd sick day |
 | SAVINGS_INTEREST_PER_DAY | 0.02 | 2% per day on jar balance |
 | SAVINGS_MIN_LOCK_DAYS | 3 | |
-| SAVINGS_EARLY_PENALTY | 0.10 | 10% of withdrawn amount is burned if before lock ends |
+| SAVINGS_EARLY_PENALTY | 0.10 | 10% early-withdrawal penalty transferred to treasury if before lock ends |
 | CLASS_GOAL_TARGET | 500 | total COOP in all members' savings jars |
-| SEASON_BONUS_MINT | 50 | COOP minted to each member when goal reached |
+| SEASON_BONUS_MINT | 50 | COOP season bonus payout to each member when goal reached |
 | DEMO_SEED | 42 | RNG seed in demo mode |
 
 ## Randomness
@@ -67,12 +67,12 @@ NPC buyer has its own wallet and pays from its balance; if its balance is too lo
 
 ## Savings jar
 - Deposit any amount. Interest daily. Withdraw anytime.
-- If withdrawn before `SAVINGS_MIN_LOCK_DAYS` since deposit, penalty burn applies to the withdrawn amount.
+- If withdrawn before `SAVINGS_MIN_LOCK_DAYS` since deposit, a 10% early-withdrawal penalty applies to the withdrawn amount (transferred to the treasury).
 - Track `jarDepositDay` per deposit (use weighted simplest approach: reset lock timer on any deposit).
 
 ## Class goal
 - `classSavings` = sum of all members' jar balances (demo: includes 4 simulated classmates with fixed balances that grow 3% per day).
-- When `classSavings >= CLASS_GOAL_TARGET` for the first time in a season: mint SEASON_BONUS_MINT COOP to each member, show celebration, season counter +1, target stays the same.
+- When `classSavings >= CLASS_GOAL_TARGET` for the first time in a season: trigger SEASON_BONUS_MINT COOP season bonus payout to each member, show celebration, season counter +1, target stays the same.
 
 ## Reputation (simple)
 `reputation += 1` for each: day with all hens fed and healthy; day with savings jar > 0. Reputation >= 5 unlocks the "Gold Feed Bag" perk: feed cost -10% (applied to feedPrice). Keep it visible but minor.

@@ -24,9 +24,9 @@ export const MEDICINE_COST = 8; // COOP, cures one sick hen
 export const SICK_DEATH_DAYS = 3; // untreated sick hen dies on 3rd sick day
 export const SAVINGS_INTEREST_PER_DAY = 0.02; // 2% per day on jar balance
 export const SAVINGS_MIN_LOCK_DAYS = 3;
-export const SAVINGS_EARLY_PENALTY = 0.10; // 10% of withdrawn amount is burned if before lock ends
+export const SAVINGS_EARLY_PENALTY = 0.10; // 10% early-withdrawal penalty transferred to treasury if before lock ends
 export const CLASS_GOAL_TARGET = 500; // total COOP in all members' savings jars
-export const SEASON_BONUS_MINT = 50; // COOP minted to each member when goal reached
+export const SEASON_BONUS_MINT = 50; // COOP season bonus payout to each member when goal reached
 export const DEMO_SEED = 42; // RNG seed in demo mode
 
 // Additional constants specified in GAME_RULES.md sections

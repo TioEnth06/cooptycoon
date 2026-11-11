@@ -122,7 +122,7 @@ describe('Coop Tycoon Game Engine & Market Rules', () => {
     expect(res.mentorMessages[0]).toContain('A sick hen was not treated in time');
   });
 
-  it('applies 10% early withdrawal burn penalty before SAVINGS_MIN_LOCK_DAYS (3 days) and 0% after', () => {
+  it('applies 10% early-withdrawal penalty before SAVINGS_MIN_LOCK_DAYS (3 days) and 0% after', () => {
     let state = createInitialGameState(DEMO_SEED);
     const dep = depositToJar(state, 40);
     state = dep.state;
@@ -130,7 +130,7 @@ describe('Coop Tycoon Game Engine & Market Rules', () => {
     expect(state.balance).toBe(60);
     expect(state.jarDepositDay).toBe(1);
 
-    // Withdraw 20 on day 2 (only 1 day elapsed < 3 days lock) -> 10% penalty = 2 COOP burned
+    // Withdraw 20 on day 2 (only 1 day elapsed < 3 days lock) -> 10% penalty = 2 COOP
     state = { ...state, day: 2 };
     const early = withdrawFromJar(state, 20);
     expect(early.isEarly).toBe(true);

@@ -14,11 +14,11 @@ See `docs/NEAR_REFERENCES.md` for the source list and verified facts.
   - `storage_deposit({ account_id, registration_only: true })` with `0.00125 NEAR` (`1250000000000000000000` yoctoNEAR) attached deposit paid by `TREASURY_ACCOUNT`.
   - `ft_transfer({ receiver_id, amount, memo })` with `1 yoctoNEAR` (`1`) attached deposit and `30 TGas`.
   - `ft_balance_of({ account_id })` (view call).
-- **Mint / Burn mechanics:**
-  - `TREASURY_ACCOUNT` holds the initial pre-minted supply of `$COOP` (e.g., `1,000,000,000 COOP`).
-  - **Starter grant (`100 COOP`)** and **Season Bonus Mint (`50 COOP` when Class Goal reached)** execute `ft_transfer` from `TREASURY_ACCOUNT` to the player.
-  - **NPC Egg Payout** executes `ft_transfer` from `NPC_ACCOUNT` wallet to the player.
-  - **Early-Withdrawal Penalty Burn (`10%`)** executes `ft_transfer` from player/account back to `TREASURY_ACCOUNT` (with memo `"Early withdrawal penalty burn"`).
+- **Payout & Penalty mechanics:**
+  - `TREASURY_ACCOUNT` holds the initial pre-funded supply of `$COOP` (e.g., `1,000,000,000 COOP`).
+  - **Starter grant (`100 COOP`)** and **Season Bonus Payout (`50 COOP` when Class Goal reached)** execute `ft_transfer` from `TREASURY_ACCOUNT` to the player's sub-account.
+  - **NPC Egg Payout** executes `ft_transfer` from `NPC_ACCOUNT` wallet to the player's sub-account.
+  - **Early-Withdrawal Penalty (`10%`)** executes `ft_transfer` of 10% from the player's sub-account back to `TREASURY_ACCOUNT` (with memo `"Early-withdrawal penalty"`).
 
 ## 3. Sputnik DAO v2 (`sputnikv2.testnet`) (Track 12 - Social Money)
 - **Factory:** `sputnikv2.testnet` on NEAR testnet.

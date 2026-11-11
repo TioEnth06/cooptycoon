@@ -1,6 +1,9 @@
 # Coop Tycoon
 
-> **A cozy chicken-coop simulation where kids learn saving, investing, and risk by running a tiny egg business — powered by NEAR (testnet), with an AI mentor, NPC buyers with wallets, and a family/class Sputnik DAO as guardian.**
+> **A cozy chicken-coop simulation where kids learn saving, investing, and risk by running a tiny egg business — powered by NEAR (testnet), with a rule-based mentor (Professor Hoot), NPC buyers with wallets, and a family/class Sputnik DAO as guardian.**
+
+![Coop Tycoon Screenshot Placeholder](docs/screenshot-placeholder.png)
+*(Live Demo: [https://cooptycoon-peach.vercel.app](https://cooptycoon-peach.vercel.app))*
 
 Built for **NEAR HACKATHON 2026**.
 
@@ -10,9 +13,9 @@ Built for **NEAR HACKATHON 2026**.
 
 | Track | How Coop Tycoon Satisfies It |
 |---|---|
-| **Games With Real Economies** | The economy **is** the gameplay. The NPC egg buyer has its own wallet (`coop-npc-7158.testnet`) and pays players in `$COOP` (`coop-coin-7158.testnet`); egg prices move dynamically with supply and demand (`3` to `8` COOP). Players log in with a nickname and never see wallets, gas, or blockchain jargon in the main UI. |
+| **Games With Real Economies** | The economy **is** the gameplay. The NPC egg buyer has its own wallet (`coop-npc-7158.testnet`) and pays players in `$COOP` (`coop-coin-7158.testnet`); egg prices move dynamically with supply and demand (`3` to `8` COOP). Players log in with a nickname, Passkey, or `.testnet` handle and never see wallet popups, gas prompts, or blockchain jargon in the main UI. |
 | **Social Money** | A Class/Family DAO deployed on **Sputnik DAO v2** (`coop-class-7158.sputnikv2.testnet`) acts as guardian for large purchases (`>= 30 COOP` when buying additional hens). Caring for hens and saving coins builds **Reputation**, unlocking the **Gold Feed Bag** (`-10%` daily feed cost at `Reputation >= 5`). |
-| **Memecoins With Mechanics** | The `$COOP` NEP-141 token enforces economic rules: a **Season Bonus Mint** (`+50 COOP` to every member) when the class hits the collective savings goal (`500 COOP`), daily **2% Savings Jar interest**, and a **10% early-withdrawal penalty burn** if withdrawn before the 3-day lock expires. |
+| **Memecoins With Mechanics** | The `$COOP` NEP-141 token enforces economic rules: a **season bonus payout** (`+50 COOP` `ft_transfer` from the treasury to every member) when the class hits the collective savings goal (`500 COOP`), daily **2% Savings Jar interest**, and a **10% early-withdrawal penalty** transferred to the treasury if withdrawn before the 3-day lock expires. |
 
 ---
 
@@ -62,7 +65,18 @@ Then start the server:
 npm run dev
 ```
 
-Click the **🧾 Proof** icon in the top-right corner of the app at any time to inspect live transaction hashes and open them on `testnet.nearblocks.io`.
+Click the **Proof** receipt icon in the top-right corner of the app at any time to inspect live transaction hashes and open them on `testnet.nearblocks.io`.
+
+---
+
+## Login Methods (How Account Provisioning Works)
+
+| Login Option | How It Works End-to-End |
+|---|---|
+| **Guest Login (Nickname)** | Player enters a nickname (e.g. `sunny`); server creates a unique custodial sub-account `{nick}.{ROOT_ACCOUNT}` (appending a numeric suffix if already taken), registers NEP-145 `storage_deposit` on `coop-coin-7158.testnet`, and sends the `100 COOP` starter grant. |
+| **NEAR Testnet Handle (`NEAR FastAuth` button)** | Player enters an existing `.testnet` account ID (or handle); server registers NEP-145 `storage_deposit` for that `.testnet` account and transfers `100 COOP` directly to it. |
+| **Passkey (WebAuthn)** | Uses browser `navigator.credentials.create` to generate a local WebAuthn credential and provisions a unique custodial sub-account `{name}-{credId}.{ROOT_ACCOUNT}` on NEAR Testnet. |
+| **Google / Email (Simulated Social Handle)** | In-app email prompt that derives a custodial sub-account `{username}.{ROOT_ACCOUNT}` on NEAR Testnet without requiring external OAuth client secrets. |
 
 ---
 
@@ -82,43 +96,39 @@ See [`contracts/README.md`](contracts/README.md) and [`contracts/deployed-testne
 
 | Feature / State | Where It Lives |
 |---|---|
-| **`$COOP` balances (Player, NPC buyer, Treasury)** | **Onchain NEP-141** (`CHAIN_MODE=live`) / In-memory ledger (`CHAIN_MODE=mock`) |
-| **Starter grant (`100 COOP`) & Season bonus (`+50 COOP`)** | **Onchain mint / `ft_transfer` from Treasury** (`live`) / Ledger (`mock`) |
+| **`$COOP` balances (Player sub-account, NPC buyer, Treasury)** | **Onchain NEP-141** (`CHAIN_MODE=live`) / In-memory ledger (`CHAIN_MODE=mock`) |
+| **Starter grant (`100 COOP`) & Season bonus payout (`+50 COOP`)** | **Onchain `ft_transfer` from Treasury** (`live`) / Ledger (`mock`) |
 | **NPC buyer payout for eggs** | **Onchain `ft_transfer` from NPC wallet to player** (`live`) / Ledger (`mock`) |
 | **Hen purchase guardian approval (`>= 30 COOP`)** | **Onchain Sputnik DAO proposal (`add_proposal` + `act_proposal`)** (`live`) / Mock proposal (`mock`) |
-| **Early-withdrawal 10% penalty burn** | **Onchain burn / transfer to Treasury** (`live`) / Ledger (`mock`) |
+| **Early-withdrawal 10% penalty** | **Onchain `ft_transfer` of 10% to Treasury** (`live`) / Ledger (`mock`) |
 | **Savings jar balance, coop state, hens, cleanliness, market stock** | **Offchain deterministic game state** (persisted in `localStorage`) |
-| **Class goal total (`500 COOP`)** | **Offchain computed** (player jar + 4 simulated classmates); **bonus mint triggered onchain** |
+| **Class goal total (`500 COOP`)** | **Offchain computed** (player jar + 4 simulated classmates); **season bonus payout triggered onchain** |
 
 ---
 
 ## Architecture Overview
 
-- **Frontend & State:** Next.js (App Router), TypeScript, Tailwind CSS, Framer Motion, and Zustand (`src/store/gameStore.ts`).
-- **Social & Testnet Login (`src/lib/nearAuth.ts`):**
-  - Supports **NEAR Testnet Login / FastAuth** (`testnet.mynearwallet.com`), one-click **Google**, **Passkey (WebAuthn)**, and **Email** sign-in, plus **Guest Nickname Login** as a zero-friction fallback.
+- **Frontend & State:** Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion, custom vector game art (`src/components/icons/GameIcons.tsx`), and Zustand (`src/store/gameStore.ts`).
 - **Game Modes (`src/game/levels.ts` & `src/game/quests.ts`):**
   - **Career Mode:** 5 progressive levels (*First eggs*, *Growing flock*, *Feed crisis*, *Patient saver*, *Class goal*) with 1–3 star ratings, unlock progression, and level completion bonuses.
   - **Challenge Mode:** 3 ready-made crisis scenarios (*Feed Crisis*, *Sick Coop*, *Egg Glut*).
   - **Sandbox Mode:** Free play with no day limit and a one-time 20-coin emergency rescue grant.
   - **Daily Quests & 7 Badges:** 3 deterministic daily quests rewarding `+1 Reputation` each, plus 7 collectible farm badges.
-- **Animation System (`src/animation/tokens.ts` & `src/components/Animations.tsx`):**
-  - Shared timing tokens (`dur`, `ease`), curved coin flight (`<CoinFly />` via `getBoundingClientRect()`), sequenced `Next Day` playback with tap-to-skip, 24-emoji confetti burst, ambient drifting clouds/grass, and muted-by-default WebAudio SFX toggle.
 - **Pure Game Engine (`src/game/`):**
   - `constants.ts`: Single source of truth for all numbers (`STARTER_GRANT = 100`, `HEN_PRICE = 30`, `CLEAN_COST = 3`, `MEDICINE_COST = 8`, etc.).
   - `rng.ts`: Seeded `mulberry32` PRNG (`DEMO_SEED = 42` in demo mode).
   - `engine.ts`: Deterministic 10-step `nextDay(state)` tick (feed -> cleanliness -> sickness rolls -> egg production -> market decay -> feed spike roll -> 2% savings interest -> day increment -> rule-based mentor -> class goal check).
   - `market.ts`: Dynamic supply/demand `eggPrice(marketStock)` clamped to `[3, 8]` and NPC wallet cap.
-  - `mentor.ts`: 11 priority-ordered cause-and-effect mentor triggers (max 2 messages per day).
+  - `mentor.ts`: Rule-based mentor (Professor Hoot) with 11 priority-ordered cause-and-effect triggers (max 2 messages per day).
 - **Chain Layer (`src/chain/` & `src/app/api/chain/*`):**
   - `ChainAdapter` interface implemented by `MockChainAdapter` (`src/chain/mock.ts`) and `NearChainAdapter` (`src/chain/near.ts`) using modern `near-api-js` (`Account`, `JsonRpcProvider`, `KeyPairSigner`).
-  - Non-blocking API calls with automatic background retry so RPC latency never interrupts a child's gameplay.
+  - Non-blocking API calls that immediately record a `pending` proof and retry once in the background if an RPC call fails.
 
 ---
 
 ## Testing & Verification
 
-Run the Vitest unit test suite and production build:
+Run the Vitest unit test suite (`17` tests across engine, levels, and chain adapter) and production build:
 
 ```bash
 npm test
@@ -131,9 +141,9 @@ npm run build
 
 - **Safety & Honesty:** Uses virtual **NEAR testnet** tokens only — zero real monetary value, no fiat/crypto onramps, no gambling or random-reward/lootbox mechanics. Educational simulation only, not financial advice.
 - **Known Limitations:**
-  - **Custodial guest accounts:** To keep login 100% frictionless for children (no wallet popups or seed phrases), guest accounts are managed server-side under the root/treasury testnet account.
+  - **Custodial guest sub-accounts:** To keep login 100% frictionless for children (no wallet popups or seed phrases), guest sub-accounts (`{nick}.{ROOT_ACCOUNT}`) are created and signed server-side by the treasury account.
   - **Simulated classmates:** The 4 classmates in the Class Goal sheet (`Maya`, `Leo`, `Sam`, `Zoe`) are simulated locally with a steady `3%/day` savings growth so single-player sessions and judges can experience the collective goal loop.
-  - **Rule-based AI mentor:** Professor Hoot uses deterministic, rule-based cause-and-effect templates (`src/game/mentor.ts`) so explanations are instant, safe, and predictable.
+  - **Rule-based mentor (Professor Hoot):** Uses deterministic, rule-based cause-and-effect templates (`src/game/mentor.ts`) rather than a live LLM so explanations are instant, child-safe, and predictable.
 
 ## License
 

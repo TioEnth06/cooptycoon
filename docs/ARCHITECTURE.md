@@ -15,13 +15,13 @@ Everything goes through `ChainAdapter`. Two implementations:
 ## What is onchain vs offchain
 | Thing | Where |
 |---|---|
-| $COOP balances (player, NPC buyer, treasury) | Onchain NEP-141 (live) / ledger (mock) |
-| Starter grant, season bonus | Onchain mint (live) |
+| $COOP balances (player sub-account, NPC buyer, treasury) | Onchain NEP-141 (live) / ledger (mock) |
+| Starter grant, season bonus payout | Onchain `ft_transfer` from treasury (live) |
 | NPC buyer payout for eggs | Onchain `ft_transfer` from NPC account to player |
 | Hen purchase approval | Onchain Sputnik DAO proposal (live) / mock proposal |
 | Savings jar, coop state, hens, cleanliness | Offchain game state |
-| Early-withdraw burn | Onchain burn/transfer to treasury (live) / ledger (mock) |
-| Class goal total | Offchain computed; mint triggered onchain |
+| Early-withdrawal penalty | Onchain 10% transfer to treasury (live) / ledger (mock) |
+| Class goal total | Offchain computed; season bonus payout triggered onchain |
 
 Be honest about this in the README.
 

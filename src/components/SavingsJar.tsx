@@ -123,8 +123,8 @@ export function SavingsJar() {
             {/* Early Withdraw Warning */}
             {isEarlyWithdraw && (
               <div className="p-3 rounded-2xl bg-coop-red/10 border-2 border-coop-red text-xs font-bold text-coop-red">
-                Withdrawing before {SAVINGS_MIN_LOCK_DAYS} days burns{' '}
-                {SAVINGS_EARLY_PENALTY * 100}% of the withdrawn coins. Waiting{' '}
+                Withdrawing before {SAVINGS_MIN_LOCK_DAYS} days applies a{' '}
+                {SAVINGS_EARLY_PENALTY * 100}% early-withdrawal penalty. Waiting{' '}
                 {daysRemainingLock} more day(s) makes withdrawal free.
               </div>
             )}

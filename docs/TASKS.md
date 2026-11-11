@@ -3,7 +3,7 @@
 Rule: finish a task, run it, commit, then move on. If a task is blocked >30 min, switch to mock mode and continue.
 
 ## Day 0 (setup, before Day 1)
-- [x] T0.1 Read `HACKATHON.md` and the track prompts (Games 09, Memecoins 11, Social 12) from github.com/nearai/near-hackathon-prompt-examples; summarize into `docs/RESEARCH_NOTES.md`: social login method, FT contract example, Sputnik proposal kinds.
+- [x] T0.1 Read `HACKATHON.md` and the track prompts (Games 09, Memecoins 11, Social 12) from github.com/nearai/near-hackathon-prompt-examples; summarize into `docs/RESEARCH_NOTES.md`: login method, FT contract example, Sputnik proposal kinds.
 - [x] T0.2 Create public GitHub repo, push these docs.
 - [x] T0.3 Create NEAR testnet accounts: root, treasury, npc, guardian (`near create-account <name>.testnet --useFaucet`). Fund via faucet; see funding checklist in `docs/NEAR_REFERENCES.md`.
 - [x] T0.4 Copy the must-read pages from `docs/NEAR_REFERENCES.md` into `docs/near-refs/` (or add as Cursor @Docs).
@@ -23,13 +23,12 @@ Rule: finish a task, run it, commit, then move on. If a task is blocked >30 min,
 ## Day 2: chain, social, demo, submit
 - [x] T2.1 (2h) `NearChainAdapter`: ensureAccount (+storage_deposit), grantStarter, payout, burnOrFee using the FT contract. Test on testnet.
 - [x] T2.2 (1.5h) Sputnik DAO: proposeBuy + approve; ApprovalModal with guardian button.
-- [x] T2.3 (1h) Class goal: 4 simulated classmates, ClassGoal bar, season bonus mint, Celebration animation.
+- [x] T2.3 (1h) Class goal: 4 simulated classmates, ClassGoal bar, season bonus payout, Celebration animation.
 - [x] T2.4 (1h) ProofDrawer listing tx links; demo mode (seeded events, fast-forward 3 days).
 - [x] T2.5 (1h) Polish animations (egg pop, coin fly, sick hen, mentor bubble) per DESIGN.md.
 - [x] T2.6 (1h) README per `docs/SUBMISSION.md`, `.env.example` check, fresh-clone test in mock mode.
-- [ ] T2.7 (1h) Record demo per `docs/DEMO_SCRIPT.md`; post on X; submit form.
 
-## Game mode and animation upgrade (do before polish; see GAME_MODES.md and ANIMATION.md)
+## Game mode and animation upgrade (see GAME_MODES.md and ANIMATION.md)
 - [x] G1 `levels.ts` + level state + win/lose checks + stars
 - [x] G2 Home/mode select, level select, level intro, HUD goal bar, "Day x/y"
 - [x] G3 End-of-day summary, level complete/failed/bankrupt screens
@@ -38,9 +37,6 @@ Rule: finish a task, run it, commit, then move on. If a task is blocked >30 min,
 - [x] A1 (P0) animation tokens, hen idle/sick/eat, egg pop, coin fly, count-up, button press, day cycle
 - [x] A2 (P1) level complete stars, goal bar, quest check, game over, price arrow
 - [x] A3 (P2) confetti, ambient scene, badge toast, optional SFX (muted by default)
-
-## Buffer (Nov 13-14)
-Fix bugs only. No new features. Submit before 14 Nov 2026, 23:59 UTC (aim for 13 Nov).
 
 ## Definition of Done (manual test)
 1. Fresh clone, `npm i`, `npm run dev`, mock mode works with no env.

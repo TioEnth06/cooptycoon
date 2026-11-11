@@ -57,12 +57,14 @@ export class MockChainAdapter implements ChainAdapter {
       nickname
         .toLowerCase()
         .replace(/[^a-z0-9_-]/g, '')
-        .slice(0, 20) || 'farmer';
+        .slice(0, 14) || 'farmer';
     const root = process.env.ROOT_ACCOUNT || 'coop-tycoon.testnet';
-    const accountId = `${clean}.${root}`;
-    if (!balances.has(accountId)) {
-      balances.set(accountId, 0);
+    let accountId = `${clean}.${root}`;
+    if (balances.has(accountId)) {
+      const suffix = Math.floor(100 + Math.random() * 900);
+      accountId = `${clean.slice(0, 10)}${suffix}.${root}`;
     }
+    balances.set(accountId, 0);
     return { accountId };
   }
 
@@ -81,14 +83,14 @@ export class MockChainAdapter implements ChainAdapter {
   async burnOrFee(accountId: string, amount: number): Promise<TxProof> {
     const current = balances.get(accountId) ?? 0;
     balances.set(accountId, Math.max(0, current - amount));
-    return makeMockTx(`Burn / treasury fee (-${amount} COOP)`, 'burn');
+    return makeMockTx(`Early-withdrawal penalty (-${amount} COOP)`, 'burn');
   }
 
   async mintBonus(accountIds: string[], amount: number): Promise<TxProof[]> {
     return accountIds.map((id) => {
       const current = balances.get(id) ?? 0;
       balances.set(id, current + amount);
-      return makeMockTx(`Season bonus mint (+${amount} COOP to ${id})`, 'bonus');
+      return makeMockTx(`Season bonus payout (+${amount} COOP to ${id})`, 'bonus');
     });
   }
 

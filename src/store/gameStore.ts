@@ -141,13 +141,23 @@ export interface GameStore {
   resetDemo: () => void;
 }
 
-async function callChainNonBlocking(
+export async function callChainNonBlocking(
   endpoint: string,
   payload: Record<string, unknown>,
   pendingLabel: string,
   onProof: (proof: TxProof, extra?: Record<string, unknown>) => void,
-  onNotice?: (text: string) => void
+  onNotice?: (text: string) => void,
+  retryDelayMs = 1500
 ) {
+  // Emit a 'pending' proof immediately so the Proof Drawer shows pending state while RPC is in-flight
+  const tempTxId = `pending-${Date.now().toString(36)}`;
+  onProof({
+    label: pendingLabel,
+    txId: tempTxId,
+    status: 'pending',
+    timestamp: Date.now(),
+  });
+
   const attempt = async (): Promise<Record<string, unknown> | null> => {
     try {
       const res = await fetch(endpoint, {
@@ -170,21 +180,14 @@ async function callChainNonBlocking(
     if (onNotice) {
       onNotice('Syncing receipt in background...');
     }
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, retryDelayMs));
     result = await attempt();
   }
 
   if (result && result.proof) {
-    onProof(result.proof as TxProof, result);
-  } else {
     onProof(
-      {
-        label: `${pendingLabel} (local)`,
-        txId: `pending-${Date.now().toString(36)}`,
-        status: 'pending',
-        timestamp: Date.now(),
-      },
-      result || undefined
+      { ...(result.proof as TxProof), replacedPendingId: tempTxId } as TxProof,
+      result
     );
   }
 }
@@ -193,6 +196,14 @@ let sequenceTimers: ReturnType<typeof setTimeout>[] = [];
 function clearSequenceTimers() {
   for (const t of sequenceTimers) clearTimeout(t);
   sequenceTimers = [];
+}
+
+export function mergeProofList(prev: TxProof[], incoming: TxProof): TxProof[] {
+  if (incoming.replacedPendingId) {
+    const filtered = prev.filter((p) => p.txId !== incoming.replacedPendingId);
+    return [incoming, ...filtered];
+  }
+  return [incoming, ...prev];
 }
 
 export const useGameStore = create<GameStore>()(
@@ -323,7 +334,7 @@ export const useGameStore = create<GameStore>()(
                   typeof extra?.accountId === 'string'
                     ? extra.accountId
                     : state.accountId,
-                proofs: [proof, ...state.proofs],
+                proofs: mergeProofList(state.proofs, proof),
               }));
             }
           );
@@ -543,7 +554,7 @@ export const useGameStore = create<GameStore>()(
               `Level ${levelDef.id} Complete Bonus (+10 COOP)`,
               (proof) =>
                 set((s) => ({
-                  proofs: [proof, ...s.proofs],
+                  proofs: mergeProofList(s.proofs, proof),
                 }))
             );
           }
@@ -553,10 +564,10 @@ export const useGameStore = create<GameStore>()(
             void callChainNonBlocking(
               '/api/chain/mint-bonus',
               { accountIds: [accountId], amount: SEASON_BONUS_MINT },
-              `Season bonus mint (+${SEASON_BONUS_MINT} COOP)`,
+              `Season bonus payout (+${SEASON_BONUS_MINT} COOP)`,
               (proof) =>
                 set((s) => ({
-                  proofs: [proof, ...s.proofs],
+                  proofs: mergeProofList(s.proofs, proof),
                 }))
             );
           }
@@ -629,10 +640,10 @@ export const useGameStore = create<GameStore>()(
             void callChainNonBlocking(
               '/api/chain/mint-bonus',
               { accountIds: [accountId], amount: SEASON_BONUS_MINT },
-              `Season bonus mint (+${SEASON_BONUS_MINT} COOP)`,
+              `Season bonus payout (+${SEASON_BONUS_MINT} COOP)`,
               (proof) =>
                 set((s) => ({
-                  proofs: [proof, ...s.proofs],
+                  proofs: mergeProofList(s.proofs, proof),
                 }))
             );
           }
@@ -760,7 +771,7 @@ export const useGameStore = create<GameStore>()(
             `NPC egg payout (+${res.revenue} COOP)`,
             (proof) =>
               set((s) => ({
-                proofs: [proof, ...s.proofs],
+                proofs: mergeProofList(s.proofs, proof),
               }))
           );
 
@@ -771,7 +782,7 @@ export const useGameStore = create<GameStore>()(
               `Level ${levelDef.id} Complete Bonus (+10 COOP)`,
               (proof) =>
                 set((s) => ({
-                  proofs: [proof, ...s.proofs],
+                  proofs: mergeProofList(s.proofs, proof),
                 }))
             );
           }
@@ -825,7 +836,7 @@ export const useGameStore = create<GameStore>()(
                       },
                     }
                   : s.game,
-                proofs: [proof, ...s.proofs],
+                proofs: mergeProofList(s.proofs, proof),
               }));
             }
           );
@@ -887,7 +898,7 @@ export const useGameStore = create<GameStore>()(
             `Guardian approved Proposal #${proposalId}`,
             (proof) =>
               set((s) => ({
-                proofs: [proof, ...s.proofs],
+                proofs: mergeProofList(s.proofs, proof),
               }))
           );
         },
@@ -945,10 +956,10 @@ export const useGameStore = create<GameStore>()(
             void callChainNonBlocking(
               '/api/chain/mint-bonus',
               { accountIds: [accountId], amount: SEASON_BONUS_MINT },
-              `Season bonus mint (+${SEASON_BONUS_MINT} COOP)`,
+              `Season bonus payout (+${SEASON_BONUS_MINT} COOP)`,
               (proof) =>
                 set((s) => ({
-                  proofs: [proof, ...s.proofs],
+                  proofs: mergeProofList(s.proofs, proof),
                 }))
             );
           }
@@ -976,10 +987,10 @@ export const useGameStore = create<GameStore>()(
             void callChainNonBlocking(
               '/api/chain/status',
               { action: 'burn', accountId, amount: res.penalty },
-              `Early withdraw penalty burn (-${res.penalty} COOP)`,
+              `Early-withdrawal penalty (-${res.penalty} COOP)`,
               (proof) =>
                 set((s) => ({
-                  proofs: [proof, ...s.proofs],
+                  proofs: mergeProofList(s.proofs, proof),
                 }))
             );
           }

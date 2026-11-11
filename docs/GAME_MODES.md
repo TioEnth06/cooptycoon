@@ -19,7 +19,7 @@ Goal: turn the simulation into a game with goals, stakes, and progress. Keep all
 | 2 | Growing flock | Reinvesting | Net worth >= 160 | 12 | start as level 1 |
 | 3 | Feed crisis | Risk and reserves | Net worth >= 200 and no hen lost | 15 | feed spike on days 4-8 |
 | 4 | Patient saver | Saving and interest | Keep 100 in jar for 5 days, reputation >= 5 | 15 | 2 hens |
-| 5 | Class goal | Cooperation | Class savings >= CLASS_GOAL_TARGET | 20 | simulated classmates; triggers season bonus mint |
+| 5 | Class goal | Cooperation | Class savings >= CLASS_GOAL_TARGET | 20 | simulated classmates; triggers season bonus payout |
 
 Level `LevelDef` shape:
 ```ts
@@ -79,5 +79,5 @@ Reward: +1 reputation each (never coins). Show a small checklist card above the 
 
 ## Chain tie-ins (keep small)
 - Level complete (>=1 star) may call a `payout` of a small fixed amount from the NPC/treasury (e.g. 10 coins) once per level. Do not repeat on replay.
-- Level 5 triggers the season bonus mint.
+- Level 5 triggers the season bonus payout.
 - Proof drawer lists these proofs.

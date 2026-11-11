@@ -4,6 +4,7 @@ export type TxProof = {
   url?: string;
   status?: 'confirmed' | 'pending' | 'mock';
   timestamp?: number;
+  replacedPendingId?: string;
 };
 
 export interface ChainAdapter {

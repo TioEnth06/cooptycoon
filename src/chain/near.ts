@@ -8,6 +8,7 @@ import {
 import { ChainAdapter, TxProof } from './adapter';
 
 const STORAGE_DEPOSIT_YOCTO = BigInt('1250000000000000000000'); // 0.00125 NEAR
+const SUBACCOUNT_INIT_BALANCE_YOCTO = BigInt('2000000000000000000000'); // 0.002 NEAR minimal state for sub-account
 const ONE_YOCTO = BigInt('1');
 const PROPOSAL_BOND_YOCTO = BigInt('1000000000000000000000000'); // 1 NEAR default Sputnik v2 bond
 const DEFAULT_GAS = BigInt('50000000000000'); // 50 TGas
@@ -105,13 +106,41 @@ export class NearChainAdapter implements ChainAdapter {
     return id;
   }
 
+  private async isStorageRegistered(accountId: string): Promise<boolean> {
+    try {
+      const provider = new JsonRpcProvider({ url: getRpcUrl() });
+      const res = await provider.callFunction({
+        contractId: this.ftContractId,
+        method: 'storage_balance_of',
+        args: { account_id: accountId },
+      });
+      return res !== null && res !== undefined;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Ensures each player gets a unique sub-account `{nick}.{ROOT_ACCOUNT}` (or their explicit `.testnet` account)
+   * with NEP-145 `storage_deposit` registered on the $COOP token contract.
+   * Never maps players back to a shared ROOT_ACCOUNT balance.
+   */
   async ensureAccount(nickname: string): Promise<{ accountId: string }> {
     const trimmed = nickname.trim().toLowerCase();
     const treasury = this.treasuryAccount;
+    const root =
+      process.env.ROOT_ACCOUNT ||
+      process.env.TREASURY_ACCOUNT ||
+      'coop.testnet';
 
-    // If caller passed a full .testnet account (e.g. from MyNearWallet / FastAuth redirect)
-    if (trimmed.endsWith('.testnet') && !trimmed.includes(' ')) {
-      try {
+    // Case 1: Caller passed a full .testnet account (and not a sub-account of root that still needs creation)
+    if (
+      trimmed.endsWith('.testnet') &&
+      !trimmed.includes(' ') &&
+      !trimmed.endsWith(`.${root}`)
+    ) {
+      const registered = await this.isStorageRegistered(trimmed);
+      if (!registered) {
         await treasury.callFunctionRaw({
           contractId: this.ftContractId,
           methodName: 'storage_deposit',
@@ -122,43 +151,74 @@ export class NearChainAdapter implements ChainAdapter {
           gas: DEFAULT_GAS,
           deposit: STORAGE_DEPOSIT_YOCTO,
         });
-      } catch {
-        // Ignore if already registered
       }
       return { accountId: trimmed };
     }
 
-    const clean =
-      trimmed.replace(/[^a-z0-9_-]/g, '').slice(0, 16) || 'player';
+    // Case 2: Derive a clean sub-account prefix `{prefix}.{ROOT_ACCOUNT}`
+    const rawPrefix = trimmed.endsWith(`.${root}`)
+      ? trimmed.slice(0, -(root.length + 1))
+      : trimmed;
+    const basePrefix =
+      rawPrefix.replace(/[^a-z0-9_-]/g, '').slice(0, 14) || 'player';
+
+    const rawKey = process.env.TREASURY_PRIVATE_KEY!;
+    const normalizedKey = (
+      rawKey.startsWith('ed25519:') ? rawKey : `ed25519:${rawKey}`
+    ) as KeyPairString;
+    const treasuryPubKey = KeyPair.fromString(normalizedKey).getPublicKey();
+
+    let candidatePrefix = basePrefix;
+    let candidateAccountId = `${candidatePrefix}.${root}`;
+
+    // If the sub-account already has FT storage registered, append a short deterministic/random suffix
+    // so a new guest with the same nickname gets a fresh sub-account balance
+    const alreadyUsed = await this.isStorageRegistered(candidateAccountId);
+    if (alreadyUsed && !trimmed.endsWith(`.${root}`)) {
+      const suffix = Math.floor(100 + Math.random() * 900);
+      candidatePrefix = `${basePrefix.slice(0, 10)}${suffix}`;
+      candidateAccountId = `${candidatePrefix}.${root}`;
+    }
+
+    // Create the sub-account under ROOT_ACCOUNT if it doesn't exist yet onchain
+    try {
+      await treasury.createSubAccount({
+        accountOrPrefix: candidatePrefix,
+        publicKey: treasuryPubKey,
+        nearToTransfer: SUBACCOUNT_INIT_BALANCE_YOCTO,
+      });
+    } catch {
+      // Sub-account already exists onchain; proceed to storage_deposit
+    }
+
+    const registered = await this.isStorageRegistered(candidateAccountId);
+    if (!registered) {
+      await treasury.callFunctionRaw({
+        contractId: this.ftContractId,
+        methodName: 'storage_deposit',
+        args: {
+          account_id: candidateAccountId,
+          registration_only: true,
+        },
+        gas: DEFAULT_GAS,
+        deposit: STORAGE_DEPOSIT_YOCTO,
+      });
+    }
+
+    return { accountId: candidateAccountId };
+  }
+
+  private resolveOnchainReceiver(accountId: string): string {
+    const cleaned = accountId.trim().toLowerCase();
     const root =
       process.env.ROOT_ACCOUNT ||
       process.env.TREASURY_ACCOUNT ||
       'coop.testnet';
-    const targetAccountId = root;
-
-    await treasury.callFunctionRaw({
-      contractId: this.ftContractId,
-      methodName: 'storage_deposit',
-      args: {
-        account_id: targetAccountId,
-        registration_only: true,
-      },
-      gas: DEFAULT_GAS,
-      deposit: STORAGE_DEPOSIT_YOCTO,
-    });
-
-    return { accountId: `${clean}.${root}` };
-  }
-
-  private resolveOnchainReceiver(accountId: string): string {
-    const root = process.env.ROOT_ACCOUNT || process.env.TREASURY_ACCOUNT;
-    if (root && accountId.endsWith(`.${root}`)) {
-      return root;
+    if (cleaned.endsWith('.testnet')) {
+      return cleaned;
     }
-    if (accountId.endsWith('.testnet')) {
-      return accountId;
-    }
-    return root || accountId;
+    const prefix = cleaned.replace(/[^a-z0-9_-]/g, '').slice(0, 16) || 'player';
+    return `${prefix}.${root}`;
   }
 
   async grantStarter(accountId: string, amount: number): Promise<TxProof> {
@@ -170,7 +230,7 @@ export class NearChainAdapter implements ChainAdapter {
       args: {
         receiver_id: receiverId,
         amount: String(Math.round(amount)),
-        memo: `Starter grant for ${accountId}`,
+        memo: `Starter grant for ${receiverId}`,
       },
       gas: DEFAULT_GAS,
       deposit: ONE_YOCTO,
@@ -195,7 +255,7 @@ export class NearChainAdapter implements ChainAdapter {
       args: {
         receiver_id: receiverId,
         amount: String(Math.round(amount)),
-        memo: `NPC egg purchase payout to ${accountId}`,
+        memo: `NPC egg purchase payout to ${receiverId}`,
       },
       gas: DEFAULT_GAS,
       deposit: ONE_YOCTO,
@@ -212,15 +272,29 @@ export class NearChainAdapter implements ChainAdapter {
   }
 
   async burnOrFee(accountId: string, amount: number): Promise<TxProof> {
-    const treasury = this.treasuryAccount;
-    const npcId = process.env.NPC_ACCOUNT || treasury.accountId;
-    const outcome = await treasury.callFunctionRaw({
+    const root =
+      process.env.ROOT_ACCOUNT ||
+      process.env.TREASURY_ACCOUNT ||
+      'coop.testnet';
+    const senderId = this.resolveOnchainReceiver(accountId);
+    const treasuryKey = process.env.TREASURY_PRIVATE_KEY!;
+
+    // If the player account is a custodial sub-account of ROOT_ACCOUNT, sign with the custodial key
+    // to transfer the 10% early-withdrawal penalty back to TREASURY_ACCOUNT.
+    const signerAccount = senderId.endsWith(`.${root}`)
+      ? getAccountSigner(senderId, treasuryKey)
+      : this.treasuryAccount;
+    const receiverId = senderId.endsWith(`.${root}`)
+      ? root
+      : process.env.NPC_ACCOUNT || root;
+
+    const outcome = await signerAccount.callFunctionRaw({
       contractId: this.ftContractId,
       methodName: 'ft_transfer',
       args: {
-        receiver_id: npcId,
+        receiver_id: receiverId,
         amount: String(Math.max(1, Math.round(amount))),
-        memo: `Fee/penalty burn from ${accountId}`,
+        memo: `Early-withdrawal penalty from ${senderId}`,
       },
       gas: DEFAULT_GAS,
       deposit: ONE_YOCTO,
@@ -228,7 +302,7 @@ export class NearChainAdapter implements ChainAdapter {
 
     const txId = extractTxHash(outcome);
     return {
-      label: `Burn / fee (-${amount} COOP)`,
+      label: `Early-withdrawal penalty (-${amount} COOP)`,
       txId,
       url: getExplorerTxUrl(txId),
       status: 'confirmed',
@@ -248,7 +322,7 @@ export class NearChainAdapter implements ChainAdapter {
       args: {
         receiver_id: receiverId,
         amount: String(Math.round(amount)),
-        memo: `Class Goal Season Bonus (+${amount} COOP)`,
+        memo: `Class Goal season bonus payout (+${amount} COOP)`,
       },
       gas: DEFAULT_GAS,
       deposit: ONE_YOCTO,
@@ -256,7 +330,7 @@ export class NearChainAdapter implements ChainAdapter {
 
     const txId = extractTxHash(outcome);
     proofs.push({
-      label: `Class Goal Season Bonus (+${amount} COOP)`,
+      label: `Season bonus payout (+${amount} COOP)`,
       txId,
       url: getExplorerTxUrl(txId),
       status: 'confirmed',

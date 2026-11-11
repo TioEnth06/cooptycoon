@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     const message =
-      err instanceof Error ? err.message : 'Chain bonus mint failed';
+      err instanceof Error ? err.message : 'Season bonus payout failed';
     return NextResponse.json(
       { ok: false, error: message },
       { status: 200 }
